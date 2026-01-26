@@ -198,30 +198,62 @@ def tela_nome():
 def tela_placar(nome, score):
     fonte_titulo = pygame.font.SysFont("Arial", 48, bold=True)
     fonte = pygame.font.SysFont("Arial", 28)
-    small = pygame.font.SysFont("Arial", 18)
+    small = pygame.font.SysFont("Arial", 20)
+    tiny = pygame.font.SysFont("Arial", 16)
 
     # atualiza highscores e obtém a lista atualizada
     highscores = update_highscores(nome, score)
 
-    # (opcional) debug no console — comente se não quiser ver isso
-    print("[HS] highscores atualizados:", highscores)
+    # layout coordinates
+    padding = 24
+    left_x = padding
+    right_x = WIDTH // 2 + padding
+    title_y = 24
+    info_y = 100
+    top10_start_y = info_y
+    bottom_y = HEIGHT - 70
 
     while True:
         tela.fill(CINZA)
 
-        tela.blit(fonte_titulo.render("PLACAR FINAL", True, PRETO), (WIDTH//2 - 160, 24))
-        tela.blit(fonte.render(f"Jogador: {nome}", True, PRETO), (WIDTH//2 - 160, 90))
-        tela.blit(fonte.render(f"Pontuação: {score}", True, PRETO), (WIDTH//2 - 160, 130))
+        # Título (centrado)
+        titulo_surf = fonte_titulo.render("PLACAR FINAL", True, PRETO)
+        tela.blit(titulo_surf, ((WIDTH - titulo_surf.get_width()) // 2, title_y))
 
-        # mostra Top10 com colocação
-        tela.blit(fonte.render("Top 10:", True, PRETO), (WIDTH//2 + 80, 80))
-        start_y = 120
+        # Caixa esquerda: jogador e sua pontuação
+        jogador_title = fonte.render("Resultado", True, PRETO)
+        tela.blit(jogador_title, (left_x, info_y))
+        tela.blit(small.render(f"Jogador: {nome}", True, PRETO), (left_x, info_y + 40))
+        tela.blit(small.render(f"Pontuação: {score}", True, PRETO), (left_x, info_y + 72))
+
+        # Caixa direita: Top 10
+        top10_title = fonte.render("Top 10", True, PRETO)
+        tela.blit(top10_title, (right_x, top10_start_y))
+        # desenha um fundo leve atrás da lista para contraste (opcional)
+        list_bg_rect = pygame.Rect(right_x - 8, top10_start_y + 36, WIDTH - right_x - padding, min(260, 30 + len(highscores)*26))
+        pygame.draw.rect(tela, (240,240,240), list_bg_rect)
+        pygame.draw.rect(tela, (200,200,200), list_bg_rect, 1)
+
+        # Renderiza cada entrada do Top10 em linhas separadas (sem sobreposição)
+        line_y = top10_start_y + 44
         for i, entry in enumerate(highscores, start=1):
-            rank_text = f"{i}. {entry['name']} — {entry['score']}"
-            tela.blit(small.render(rank_text, True, PRETO), (WIDTH//2 + 80, start_y + i*22))
+            rank_text = f"{i}. {entry['name']}"
+            score_text = f"{entry['score']}"
+            rank_surf = small.render(rank_text, True, PRETO)
+            score_surf = small.render(score_text, True, PRETO)
+            tela.blit(rank_surf, (right_x, line_y))
+            # alinha a pontuação à direita da área do Top10
+            tela.blit(score_surf, (right_x + list_bg_rect.width - score_surf.get_width() - 8, line_y))
+            line_y += 26  # espaçamento vertical consistente
 
-        tela.blit(fonte.render("Pressione R para jogar novamente", True, PRETO), (WIDTH//2 - 200, HEIGHT - 90))
-        tela.blit(fonte.render("ESC para sair", True, PRETO), (WIDTH//2 + 80, HEIGHT - 90))
+        # Comandos na parte inferior (centralizados, sem sobreposição)
+        cmd1 = tiny.render("Pressione R para jogar novamente", True, PRETO)
+        cmd2 = tiny.render("ESC para sair", True, PRETO)
+        # posiciona os dois com espaço entre eles
+        total_cmd_width = cmd1.get_width() + 24 + cmd2.get_width()
+        start_cmd_x = (WIDTH - total_cmd_width) // 2
+        tela.blit(cmd1, (start_cmd_x, bottom_y))
+        tela.blit(cmd2, (start_cmd_x + cmd1.get_width() + 24, bottom_y))
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -234,6 +266,7 @@ def tela_placar(nome, score):
 
         pygame.display.update()
         CLOCK.tick(30)
+
 
 
 # ---------------- JOGO ----------------
