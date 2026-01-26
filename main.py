@@ -24,3 +24,9 @@ CINZA = (200, 200, 200)
 
 GROUND_Y = HEIGHT - 70
 
+# ---------------- PERSONAGENS ----------------
+PERSONAGENS = {
+    "corredor": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
+    "cavalo":   {"w": 64, "h": 48, "color": MARROM, "jump": 15, "grav": 0.95},
+}
+
