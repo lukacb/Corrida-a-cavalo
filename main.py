@@ -307,10 +307,8 @@ def tela_placar(nome, score):
         CLOCK.tick(30)
 
 # ---------------- JOGO ----------------
-
-# 1. Receba os nomes nos parênteses
 def jogo_multiplayer(nome1, nome2): 
-    # ... (código do setup, player1, player2 etc... mantém igual)
+    # Setup inicial
     chao_p1 = HEIGHT // 2 - 20
     chao_p2 = HEIGHT - 20
     player1 = Player("p1", chao_p1)
@@ -321,20 +319,60 @@ def jogo_multiplayer(nome1, nome2):
     score2 = 0
     last = pygame.time.get_ticks()
 
+    # Loop Principal do Jogo
     while player1.vivo or player2.vivo:
-        # ... (código dos eventos e updates mantém igual) ...
-        # ... (CUIDADO: Não apague a lógica do loop, só pule para a parte do desenho)
+        # 1. Cálculo do tempo (Delta Time)
+        now = pygame.time.get_ticks()
+        dt = now - last
+        last = now
 
-        # --- Desenho ---
+        # 2. Eventos (Teclado e Fechar Jogo)
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                # Controles Jogador 1 (W)
+                if e.key == pygame.K_w and player1.vivo:
+                    player1.jump()
+                # Controles Jogador 2 (Seta Cima)
+                if e.key == pygame.K_UP and player2.vivo:
+                    player2.jump()
+                if e.key == pygame.K_ESCAPE:
+                    pygame.quit(); sys.exit()
+
+        # 3. Lógica e Atualização (Física)
+        
+        # --- Atualização Jogador 1 ---
+        if player1.vivo:
+            player1.update()
+            manager1.update(dt, score1)
+            if manager1.collide(player1.rect):
+                player1.vivo = False # Morreu
+            else:
+                score1 += dt // 5
+        
+        # --- Atualização Jogador 2 ---
+        if player2.vivo:
+            player2.update()
+            manager2.update(dt, score2)
+            if manager2.collide(player2.rect):
+                player2.vivo = False # Morreu
+            else:
+                score2 += dt // 5
+
+        # 4. Desenho na Tela
         tela.fill((135, 206, 235)) 
+        
+        # Cenário
         pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
         pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
         pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
+        # Desenhar Personagens e Obstáculos
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-        # --- AQUI: Mude o HUD para usar os nomes recebidos ---
+        # HUD (Placar e Nomes)
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
         
         # Nome 1 no topo
@@ -343,7 +381,7 @@ def jogo_multiplayer(nome1, nome2):
         # Nome 2 na metade
         tela.blit(fonte.render(f"{nome2}: {score2}", True, (220, 0, 0)), (10, HEIGHT//2 + 10))
 
-        # Mensagens de "Bateu" usando o nome
+        # Mensagens de "Bateu"
         if not player1.vivo:
             msg = fonte.render(f"{nome1} BATEU!", True, PRETO)
             tela.blit(msg, (WIDTH//2 - 50, chao_p1 - 100))
@@ -355,7 +393,7 @@ def jogo_multiplayer(nome1, nome2):
         pygame.display.update()
         CLOCK.tick(FPS)
 
-    # No return final, substitua "JOGADOR 1" pelo nome real
+    # Retorno final com os nomes corretos
     if score1 > score2:
         return nome1, score1, score2
     elif score2 > score1:
