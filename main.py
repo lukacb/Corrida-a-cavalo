@@ -122,4 +122,54 @@ class ObstacleManager:
     def collide(self, rect):
         return any(o.rect.colliderect(rect) for o in self.obstacles)
 
+# ---------------- TELAS ----------------
+def tela_nome():
+    nome = ""
+    fonte = pygame.font.SysFont("Arial", 36)
+    while True:
+        tela.fill(VERDE)
+        titulo = fonte.render("Digite seu nome:", True, BRANCO)
+        nome_txt = fonte.render(nome + "|", True, BRANCO)
+
+        tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 120))
+        tela.blit(nome_txt, (WIDTH//2 - nome_txt.get_width()//2, 180))
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_RETURN and nome.strip():
+                    return nome
+                elif e.key == pygame.K_BACKSPACE:
+                    nome = nome[:-1]
+                elif len(nome) < 12 and e.unicode.isprintable():
+                    nome += e.unicode
+
+        pygame.display.update()
+        CLOCK.tick(30)
+
+def tela_placar(nome, score):
+    fonte_titulo = pygame.font.SysFont("Arial", 48, bold=True)
+    fonte = pygame.font.SysFont("Arial", 28)
+
+    while True:
+        tela.fill(CINZA)
+
+        tela.blit(fonte_titulo.render("PLACAR FINAL", True, PRETO), (WIDTH//2 - 160, 80))
+        tela.blit(fonte.render(f"Jogador: {nome}", True, PRETO), (WIDTH//2 - 120, 160))
+        tela.blit(fonte.render(f"Pontuação: {score}", True, PRETO), (WIDTH//2 - 120, 200))
+        tela.blit(fonte.render("Pressione R para jogar novamente", True, PRETO), (WIDTH//2 - 180, 260))
+        tela.blit(fonte.render("ESC para sair", True, PRETO), (WIDTH//2 - 90, 300))
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_r:
+                    return
+                if e.key == pygame.K_ESCAPE:
+                    pygame.quit(); sys.exit()
+
+        pygame.display.update()
+        CLOCK.tick(30)
 
