@@ -1,5 +1,4 @@
 # hipismo_runner.py
-# Hipismo Runner – nome do jogador + placar final
 
 import pygame
 import sys
@@ -24,6 +23,16 @@ MARROM = (120, 72, 18)
 AZUL = (20, 120, 220)
 CINZA = (200, 200, 200)
 
+OPCOES_CAVALOS = [
+    {"nome": "Relâmpago (Azul)", "cor": AZUL},
+    {"nome": "Fúria (Vermelho)", "cor": (220, 20, 60)},
+    {"nome": "Fantasma (Cinza)", "cor": (100, 100, 100)},
+    {"nome": "Sombra (Preto)", "cor": (20, 20, 20)},
+    {"nome": "Ouro (Amarelo)", "cor": (218, 165, 32)},
+    {"nome": "Esmeralda (Verde)", "cor": (0, 100, 0)},
+    {"nome": "Violeta (Roxo)", "cor": (138, 43, 226)},
+]
+
 #Pontuação
 HIGHSCORES_FILE = "highscores.json"
 MAX_HIGHSCORES = 10
@@ -35,6 +44,95 @@ PERSONAGENS = {
     "p1": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
     "p2": {"w": 36, "h": 48, "color": (220, 20, 60), "jump": 13, "grav": 0.72}, # Vermelho
 }
+
+
+#---------------------SELECAO CAVALO----------------
+def tela_selecao_cavalos(nome1, nome2):
+    fonte = pygame.font.SysFont("Arial", 30)
+    fonte_nome = pygame.font.SysFont("Arial", 40, bold=True)
+    
+    # Índices da seleção atual (começam no 0 e 1 para serem diferentes)
+    idx1 = 0
+    idx2 = 1
+    
+    confirmado1 = False
+    confirmado2 = False
+
+    while True:
+        tela.fill(VERDE)
+        
+        # --- LADO P1 (Esquerda) ---
+        cor_fundo1 = (200, 255, 200) if confirmado1 else (150, 200, 150)
+        pygame.draw.rect(tela, cor_fundo1, (0, 0, WIDTH//2, HEIGHT))
+        
+        # Nome P1
+        txt_n1 = fonte_nome.render(nome1, True, PRETO)
+        tela.blit(txt_n1, (WIDTH//4 - txt_n1.get_width()//2, 50))
+        
+        # Cavalo Selecionado P1
+        cavalo1 = OPCOES_CAVALOS[idx1]
+        pygame.draw.rect(tela, cavalo1["cor"], (WIDTH//4 - 40, 150, 80, 80), border_radius=10)
+        txt_c1 = fonte.render(cavalo1["nome"], True, PRETO)
+        tela.blit(txt_c1, (WIDTH//4 - txt_c1.get_width()//2, 250))
+
+        # Status P1
+        status1 = "PRONTO!" if confirmado1 else "Escolha com W/S e ESPAÇO"
+        txt_s1 = fonte.render(status1, True, PRETO)
+        tela.blit(txt_s1, (WIDTH//4 - txt_s1.get_width()//2, 350))
+
+        # --- LADO P2 (Direita) ---
+        cor_fundo2 = (200, 255, 200) if confirmado2 else (150, 200, 150)
+        pygame.draw.rect(tela, cor_fundo2, (WIDTH//2, 0, WIDTH//2, HEIGHT))
+        pygame.draw.line(tela, PRETO, (WIDTH//2, 0), (WIDTH//2, HEIGHT), 5)
+
+        # Nome P2
+        txt_n2 = fonte_nome.render(nome2, True, PRETO)
+        tela.blit(txt_n2, (3*WIDTH//4 - txt_n2.get_width()//2, 50))
+        
+        # Cavalo Selecionado P2
+        cavalo2 = OPCOES_CAVALOS[idx2]
+        pygame.draw.rect(tela, cavalo2["cor"], (3*WIDTH//4 - 40, 150, 80, 80), border_radius=10)
+        txt_c2 = fonte.render(cavalo2["nome"], True, PRETO)
+        tela.blit(txt_c2, (3*WIDTH//4 - txt_c2.get_width()//2, 250))
+
+        # Status P2
+        status2 = "PRONTO!" if confirmado2 else "Escolha com SETAS e ENTER"
+        txt_s2 = fonte.render(status2, True, PRETO)
+        tela.blit(txt_s2, (3*WIDTH//4 - txt_s2.get_width()//2, 350))
+
+        pygame.display.update()
+
+        # Checa se ambos confirmaram
+        if confirmado1 and confirmado2:
+            pygame.time.delay(1000) # Espera 1 pra ver o "Pronto"
+            return cavalo1["cor"], cavalo2["cor"]
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            
+            if e.type == pygame.KEYDOWN:
+                # Controles P1
+                if not confirmado1:
+                    if e.key == pygame.K_w:
+                        idx1 = (idx1 - 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_s:
+                        idx1 = (idx1 + 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_SPACE:
+                        confirmado1 = True
+                elif e.key == pygame.K_SPACE: # Desconfirmar se apertar de novo
+                    confirmado1 = False
+
+                # Controles P2
+                if not confirmado2:
+                    if e.key == pygame.K_UP:
+                        idx2 = (idx2 - 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_DOWN:
+                        idx2 = (idx2 + 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_RETURN:
+                        confirmado2 = True
+                elif e.key == pygame.K_RETURN:
+                    confirmado2 = False
 
 #Placar
 
@@ -78,12 +176,17 @@ def update_highscores(name, score):
     return highscores
 
 # ---------------- JOGADOR ----------------
-# --- SUBSTITUA A CLASSE PLAYER INTEIRA POR ISSO ---
 class Player:
-    def __init__(self, tipo, y_chao):
+    def __init__(self, tipo, y_chao, cor_personalizada=None):
         p = PERSONAGENS[tipo]
         self.w, self.h = p["w"], p["h"]
-        self.color = p["color"]
+        
+        if cor_personalizada:
+            self.color = cor_personalizada
+        else:
+            self.color = p["color"]
+        # ---------------------------
+
         self.jump_force = p["jump"]
         self.gravity = p["grav"]
         self.y_chao = y_chao # Cada jogador tem seu próprio chão
@@ -114,7 +217,7 @@ class Player:
                 self.on_ground = True
 
     def draw(self):
-        # Desenha cor normal se vivo, cinza se morreu
+        # Desenha com a cor escolhida se estiver vivo, ou cinza se morreu
         cor = self.color if self.vivo else (150, 150, 150)
         pygame.draw.rect(tela, cor, self.rect, border_radius=6)
 
@@ -151,13 +254,13 @@ class Obstacle:
             pygame.draw.rect(tela, AMARELO, bar, border_radius=3)
             pygame.draw.line(tela, BRANCO, bar.topleft, bar.topright, 1)
 
-# --- SUBSTITUA A CLASSE OBSTACLEMANAGER INTEIRA ---
+# ---  A CLASSE OBSTACLEMANAGER  ---
 class ObstacleManager:
     def __init__(self, y_chao):
         self.obstacles = []
         self.timer = 0
         self.speed = 6.0
-        self.y_chao = y_chao # Saber onde criar o obstaculo
+        self.y_chao = y_chao 
 
     def update(self, dt_ms, score):
         self.speed = 6.0 + min(4.0, max(0, (score - 1500) / 1200.0))
@@ -407,79 +510,85 @@ def tela_placar(nome, score):
         CLOCK.tick(30)
 
 # ---------------- JOGO ----------------
-def jogo_multiplayer(nome1, nome2): 
-    # Setup inicial
+
+def jogo_multiplayer(nome1, nome2, cor1, cor2): 
+    # Setup inicial das pistas
     chao_p1 = HEIGHT // 2 - 20
     chao_p2 = HEIGHT - 20
-    player1 = Player("p1", chao_p1)
-    player2 = Player("p2", chao_p2)
+    
+    # Passamos a cor escolhida (cor1/cor2) para cada Player
+    player1 = Player("p1", chao_p1, cor_personalizada=cor1)
+    player2 = Player("p2", chao_p2, cor_personalizada=cor2)
+    
+    # Gerenciadores de obstáculos
     manager1 = ObstacleManager(chao_p1)
     manager2 = ObstacleManager(chao_p2)
+    
     score1 = 0
     score2 = 0
     last = pygame.time.get_ticks()
 
-    # Loop Principal do Jogo
+    # Loop Principal: Roda enquanto pelo menos um estiver vivo
     while player1.vivo or player2.vivo:
         # 1. Cálculo do tempo (Delta Time)
         now = pygame.time.get_ticks()
         dt = now - last
         last = now
 
-        # 2. Eventos (Teclado e Fechar Jogo)
+        # 2. Eventos
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN:
-                # Controles Jogador 1 (W)
+                # Controles P1 (W)
                 if e.key == pygame.K_w and player1.vivo:
                     player1.jump()
-                # Controles Jogador 2 (Seta Cima)
+                # Controles P2 (Seta Cima)
                 if e.key == pygame.K_UP and player2.vivo:
                     player2.jump()
                 if e.key == pygame.K_ESCAPE:
                     pygame.quit(); sys.exit()
 
-        # 3. Lógica e Atualização (Física)
+        # 3. Lógica e Física
         
-        # --- Atualização Jogador 1 ---
+        # --- Atualização P1 ---
         if player1.vivo:
             player1.update()
             manager1.update(dt, score1)
             if manager1.collide(player1.rect):
-                player1.vivo = False # Morreu
+                player1.vivo = False
             else:
                 score1 += dt // 5
         
-        # --- Atualização Jogador 2 ---
+        # --- Atualização P2 ---
         if player2.vivo:
             player2.update()
             manager2.update(dt, score2)
             if manager2.collide(player2.rect):
-                player2.vivo = False # Morreu
+                player2.vivo = False
             else:
                 score2 += dt // 5
 
-        # 4. Desenho na Tela
-        tela.fill((135, 206, 235)) 
+        # 4. Desenho
+        tela.fill((135, 206, 235)) # Céu
         
         # Cenário
         pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
         pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
         pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
-        # Desenhar Personagens e Obstáculos
+        # Desenha os jogadores  e obstáculos
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-        # HUD (Placar e Nomes)
+        # HUD 
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
         
-        # Nome 1 no topo
-        tela.blit(fonte.render(f"{nome1}: {score1}", True, AZUL), (10, 10))
+        # Nome e Pontos P1 (Topo)
+        tela.blit(fonte.render(f"{nome1}: {score1}", True, cor1), (10, 10))
         
-        # Nome 2 na metade
-        tela.blit(fonte.render(f"{nome2}: {score2}", True, (220, 0, 0)), (10, HEIGHT//2 + 10))
+        # Nome e Pontos P2 (Meio)
+        tela.blit(fonte.render(f"{nome2}: {score2}", True, cor2), (10, HEIGHT//2 + 10))
 
         # Mensagens de "Bateu"
         if not player1.vivo:
@@ -493,7 +602,7 @@ def jogo_multiplayer(nome1, nome2):
         pygame.display.update()
         CLOCK.tick(FPS)
 
-    # Retorno final com os nomes corretos
+    
     if score1 > score2:
         return nome1, score1, score2
     elif score2 > score1:
@@ -537,24 +646,22 @@ def tela_vencedor(vencedor, score1, score2):
                 pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_r:
-                    return # Volta para o main e reinicia
+                    return 
                 if e.key == pygame.K_ESCAPE:
                     pygame.quit(); sys.exit()
 
 # ---------------- MAIN ----------------
 def main():
     while True:
-        # 1. Tela de Nomes
-        n1, n2 = tela_nomes_dupla()
-        
-        # 2. Tela de Menu (NOVO)
-        # O código fica preso aqui até a pessoa clicar em "JOGAR"
+
         tela_menu()
+
+        n1, n2 = tela_nomes_dupla()
+
+        c1, c2 = tela_selecao_cavalos(n1, n2)
         
-        # 3. O Jogo começa
-        vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2)
+        vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2, c1, c2)
         
-        # 4. Tela de Vencedor
         tela_vencedor(vencedor_nome, s1, s2)
 
 if __name__ == "__main__":
