@@ -359,19 +359,63 @@ def jogo_multiplayer():
         CLOCK.tick(FPS)
 
     # Retorna quem ganhou para exibir depois (opcional)
-    if score1 > score2: return "JOGADOR 1"
-    elif score2 > score1: return "JOGADOR 2"
-    else: return "EMPATE"
+    if score1 > score2:
+        return "JOGADOR 1", score1, score2
+    elif score2 > score1:
+        return "JOGADOR 2", score1, score2
+    else:
+        return "EMPATE", score1, score2
+
+def tela_vencedor(vencedor, score1, score2):
+    fonte_grande = pygame.font.SysFont("Arial", 60, bold=True)
+    fonte_media = pygame.font.SysFont("Arial", 30)
+
+    while True:
+        tela.fill(CINZA)
+        
+        # Mostra quem ganhou
+        texto_venc = f"VENCEDOR: {vencedor}"
+        if vencedor == "EMPATE":
+            cor = PRETO
+        elif vencedor == "JOGADOR 1":
+            cor = AZUL
+        else:
+            cor = (220, 20, 60) # Vermelho
+
+        surf_venc = fonte_grande.render(texto_venc, True, cor)
+        tela.blit(surf_venc, (WIDTH//2 - surf_venc.get_width()//2, 150))
+
+        # Mostra os pontos finais
+        txt_s1 = fonte_media.render(f"P1 (Azul): {score1}", True, AZUL)
+        txt_s2 = fonte_media.render(f"P2 (Vermelho): {score2}", True, (220, 20, 60))
+        
+        tela.blit(txt_s1, (WIDTH//2 - txt_s1.get_width()//2, 250))
+        tela.blit(txt_s2, (WIDTH//2 - txt_s2.get_width()//2, 290))
+
+        cmd = fonte_media.render("Pressione R para Reiniciar ou ESC para Sair", True, PRETO)
+        tela.blit(cmd, (WIDTH//2 - cmd.get_width()//2, 450))
+
+        pygame.display.update()
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_r:
+                    return # Volta para o main e reinicia
+                if e.key == pygame.K_ESCAPE:
+                    pygame.quit(); sys.exit()
 
 # ---------------- MAIN ----------------
 def main():
-    if not os.path.exists(HIGHSCORES_FILE):
-        save_highscores([])
-
     while True:
-        nome = tela_nome()
-        score = jogo_multiplayer()
-        tela_placar(nome, score)
+        # Chama o jogo e pega o vencedor + as pontuações
+        vencedor, s1, s2 = jogo_multiplayer()
+        
+        # Mostra a tela de vencedor em vez do placar antigo
+        tela_vencedor(vencedor, s1, s2)
 
 if __name__ == "__main__":
     main()
+
+
