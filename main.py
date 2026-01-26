@@ -90,3 +90,36 @@ class Obstacle:
             pygame.draw.rect(tela, AMARELO, bar, border_radius=3)
             pygame.draw.line(tela, BRANCO, bar.topleft, bar.topright, 1)
 
+# ---------------- GERENCIADOR ----------------
+class ObstacleManager:
+    def __init__(self):
+        self.obstacles = []
+        self.timer = 0
+        self.speed = 6.0
+
+    def update(self, dt_ms, score):
+        # aceleração gradual
+        self.speed = 6.0 + min(4.0, max(0, (score - 1500) / 1200.0))
+
+        self.timer += dt_ms
+        if self.timer > random.randint(1200, 2200):
+            self.timer = 0
+            gap = random.randint(260, 560)
+            x = WIDTH + gap
+            if self.obstacles:
+                x = max(x, self.obstacles[-1].rect.right + gap)
+            self.obstacles.append(Obstacle(x, self.speed))
+
+        for obs in self.obstacles[:]:
+            obs.update(dt_ms / 16.6)
+            if obs.rect.right < 0:
+                self.obstacles.remove(obs)
+
+    def draw(self):
+        for o in self.obstacles:
+            o.draw()
+
+    def collide(self, rect):
+        return any(o.rect.colliderect(rect) for o in self.obstacles)
+
+
