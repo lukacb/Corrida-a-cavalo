@@ -59,3 +59,34 @@ class Player:
     def draw(self):
         pygame.draw.rect(tela, self.color, self.rect, border_radius=6)
 
+# ---------------- OBSTÁCULOS ----------------
+OBSTACLE_W = 56
+OBSTACLE_H = 36
+
+class Obstacle:
+    def __init__(self, x, speed):
+        self.rect = pygame.Rect(x, GROUND_Y - OBSTACLE_H, OBSTACLE_W, OBSTACLE_H)
+        self.speed = speed
+
+    def update(self, dt):
+        self.rect.x -= int(self.speed * dt)
+
+    def draw(self):
+        post_w = 6
+        post_h = OBSTACLE_H + 16
+
+        left_post = pygame.Rect(self.rect.left, GROUND_Y - post_h, post_w, post_h)
+        right_post = pygame.Rect(self.rect.right - post_w, GROUND_Y - post_h, post_w, post_h)
+
+        pygame.draw.rect(tela, MARROM, left_post)
+        pygame.draw.rect(tela, MARROM, right_post)
+
+        bar_count = 3
+        gap = OBSTACLE_H // (bar_count + 1)
+
+        for i in range(bar_count):
+            y = (GROUND_Y - post_h) + gap * (i + 1)
+            bar = pygame.Rect(left_post.right, y, OBSTACLE_W - post_w * 2, 6)
+            pygame.draw.rect(tela, AMARELO, bar, border_radius=3)
+            pygame.draw.line(tela, BRANCO, bar.topleft, bar.topright, 1)
+
