@@ -4,6 +4,8 @@
 import pygame
 import sys
 import random
+import json
+import os
 
 pygame.init()
 WIDTH, HEIGHT = 900, 400
@@ -22,6 +24,10 @@ MARROM = (120, 72, 18)
 AZUL = (20, 120, 220)
 CINZA = (200, 200, 200)
 
+#Pontuação
+HIGHSCORES_FILE = "highscores.json"
+MAX_HIGHSCORES = 10
+
 GROUND_Y = HEIGHT - 70
 
 # ---------------- PERSONAGENS ----------------
@@ -29,6 +35,47 @@ PERSONAGENS = {
     "corredor": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
     "cavalo":   {"w": 64, "h": 48, "color": MARROM, "jump": 15, "grav": 0.95},
 }
+
+#Placar
+
+def load_highscores():
+    """Retorna lista [{'name':..., 'score':...}, ...] ordenada (maior primeiro)."""
+    if not os.path.exists(HIGHSCORES_FILE):
+        return []
+    try:
+        with open(HIGHSCORES_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                cleaned = []
+                for item in data:
+                    if isinstance(item, dict) and "name" in item and "score" in item:
+                        cleaned.append({"name": str(item["name"]), "score": int(item["score"])})
+                cleaned.sort(key=lambda x: x["score"], reverse=True)
+                return cleaned[:MAX_HIGHSCORES]
+    except Exception:
+        pass
+    return []
+
+def save_highscores(highscores):
+    """Salva lista de highscores (já ordenada/truncada)."""
+    try:
+        highscores = sorted(highscores, key=lambda x: x["score"], reverse=True)[:MAX_HIGHSCORES]
+        with open(HIGHSCORES_FILE, "w", encoding="utf-8") as f:
+            json.dump(highscores, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print("Erro ao salvar highscores:", e)
+
+def update_highscores(name, score):
+    """Adiciona (name,score) e retorna a lista atualizada do Top10."""
+    name = name.strip() if isinstance(name, str) else "Anon"
+    if not name:
+        name = "Anon"
+    highscores = load_highscores()
+    highscores.append({"name": name, "score": int(score)})
+    highscores.sort(key=lambda x: x["score"], reverse=True)
+    highscores = highscores[:MAX_HIGHSCORES]
+    save_highscores(highscores)
+    return highscores
 
 # ---------------- JOGADOR ----------------
 class Player:
