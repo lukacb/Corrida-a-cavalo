@@ -198,15 +198,30 @@ def tela_nome():
 def tela_placar(nome, score):
     fonte_titulo = pygame.font.SysFont("Arial", 48, bold=True)
     fonte = pygame.font.SysFont("Arial", 28)
+    small = pygame.font.SysFont("Arial", 18)
+
+    # atualiza highscores e obtém a lista atualizada
+    highscores = update_highscores(nome, score)
+
+    # (opcional) debug no console — comente se não quiser ver isso
+    print("[HS] highscores atualizados:", highscores)
 
     while True:
         tela.fill(CINZA)
 
-        tela.blit(fonte_titulo.render("PLACAR FINAL", True, PRETO), (WIDTH//2 - 160, 80))
-        tela.blit(fonte.render(f"Jogador: {nome}", True, PRETO), (WIDTH//2 - 120, 160))
-        tela.blit(fonte.render(f"Pontuação: {score}", True, PRETO), (WIDTH//2 - 120, 200))
-        tela.blit(fonte.render("Pressione R para jogar novamente", True, PRETO), (WIDTH//2 - 180, 260))
-        tela.blit(fonte.render("ESC para sair", True, PRETO), (WIDTH//2 - 90, 300))
+        tela.blit(fonte_titulo.render("PLACAR FINAL", True, PRETO), (WIDTH//2 - 160, 24))
+        tela.blit(fonte.render(f"Jogador: {nome}", True, PRETO), (WIDTH//2 - 160, 90))
+        tela.blit(fonte.render(f"Pontuação: {score}", True, PRETO), (WIDTH//2 - 160, 130))
+
+        # mostra Top10 com colocação
+        tela.blit(fonte.render("Top 10:", True, PRETO), (WIDTH//2 + 80, 80))
+        start_y = 120
+        for i, entry in enumerate(highscores, start=1):
+            rank_text = f"{i}. {entry['name']} — {entry['score']}"
+            tela.blit(small.render(rank_text, True, PRETO), (WIDTH//2 + 80, start_y + i*22))
+
+        tela.blit(fonte.render("Pressione R para jogar novamente", True, PRETO), (WIDTH//2 - 200, HEIGHT - 90))
+        tela.blit(fonte.render("ESC para sair", True, PRETO), (WIDTH//2 + 80, HEIGHT - 90))
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -219,6 +234,7 @@ def tela_placar(nome, score):
 
         pygame.display.update()
         CLOCK.tick(30)
+
 
 # ---------------- JOGO ----------------
 def jogo(nome):
