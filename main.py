@@ -185,29 +185,53 @@ class ObstacleManager:
         return any(o.rect.colliderect(rect) for o in self.obstacles)
 
 # ---------------- TELAS ----------------
-def tela_nome():
-    nome = ""
+def tela_nomes_dupla():
+    nomes = ["", ""] # Lista para guardar [Nome1, Nome2]
+    atual = 0 # 0 = editando P1, 1 = editando P2
     fonte = pygame.font.SysFont("Arial", 36)
+
     while True:
         tela.fill(VERDE)
-        titulo = fonte.render("Digite seu nome:", True, BRANCO)
-        nome_txt = fonte.render(nome + "|", True, BRANCO)
 
+        # Muda o título dependendo de quem estamos digitando
+        if atual == 0:
+            msg = "Nome do Jogador 1 (Azul):"
+        else:
+            msg = "Nome do Jogador 2 (Vermelho):"
+            
+        titulo = fonte.render(msg, True, BRANCO)
+        nome_txt = fonte.render(nomes[atual] + "|", True, BRANCO)
+
+        # Desenha centralizado
         tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 120))
         tela.blit(nome_txt, (WIDTH//2 - nome_txt.get_width()//2, 180))
+        
+        # Instrução pequena
+        info = pygame.font.SysFont("Arial", 20).render("Enter para confirmar", True, BRANCO)
+        tela.blit(info, (WIDTH//2 - info.get_width()//2, 250))
+
+        pygame.display.update()
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
+            
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_RETURN and nome.strip():
-                    return nome
+                if e.key == pygame.K_RETURN:
+                    # Só avança se tiver digitado algo
+                    if nomes[atual].strip():
+                        if atual == 0:
+                            atual = 1 # Vai para o Jogador 2
+                        else:
+                            return nomes[0], nomes[1] # Retorna os dois nomes
+                
                 elif e.key == pygame.K_BACKSPACE:
-                    nome = nome[:-1]
-                elif len(nome) < 12 and e.unicode.isprintable():
-                    nome += e.unicode
-
-        pygame.display.update()
+                    nomes[atual] = nomes[atual][:-1]
+                
+                # Limite de 12 caracteres
+                elif len(nomes[atual]) < 12 and e.unicode.isprintable():
+                    nomes[atual] += e.unicode
+        
         CLOCK.tick(30)
 
 def tela_placar(nome, score):
@@ -284,85 +308,58 @@ def tela_placar(nome, score):
 
 # ---------------- JOGO ----------------
 
-def jogo_multiplayer():
-    # Definindo as "pistas"
-    chao_p1 = HEIGHT // 2 - 20  # Pista de Cima
-    chao_p2 = HEIGHT - 20       # Pista de Baixo
-
-    # Criando objetos independentes
+# 1. Receba os nomes nos parênteses
+def jogo_multiplayer(nome1, nome2): 
+    # ... (código do setup, player1, player2 etc... mantém igual)
+    chao_p1 = HEIGHT // 2 - 20
+    chao_p2 = HEIGHT - 20
     player1 = Player("p1", chao_p1)
     player2 = Player("p2", chao_p2)
-
     manager1 = ObstacleManager(chao_p1)
     manager2 = ObstacleManager(chao_p2)
-
     score1 = 0
     score2 = 0
     last = pygame.time.get_ticks()
-    
-    # O loop roda enquanto PELO MENOS UM estiver vivo
+
     while player1.vivo or player2.vivo:
-        now = pygame.time.get_ticks()
-        dt = now - last
-        last = now
-
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
-            if e.type == pygame.KEYDOWN:
-                # Controles Jogador 1 (W)
-                if e.key == pygame.K_w and player1.vivo:
-                    player1.jump()
-                # Controles Jogador 2 (Seta Cima)
-                if e.key == pygame.K_UP and player2.vivo:
-                    player2.jump()
-                if e.key == pygame.K_ESCAPE:
-                    pygame.quit(); sys.exit()
-
-        # --- Lógica Jogador 1 ---
-        if player1.vivo:
-            player1.update()
-            manager1.update(dt, score1)
-            if manager1.collide(player1.rect):
-                player1.vivo = False # Morreu
-            else:
-                score1 += dt // 5
-        
-        # --- Lógica Jogador 2 ---
-        if player2.vivo:
-            player2.update()
-            manager2.update(dt, score2)
-            if manager2.collide(player2.rect):
-                player2.vivo = False # Morreu
-            else:
-                score2 += dt // 5
+        # ... (código dos eventos e updates mantém igual) ...
+        # ... (CUIDADO: Não apague a lógica do loop, só pule para a parte do desenho)
 
         # --- Desenho ---
-        tela.fill((135, 206, 235)) # Céu
-        
-        # Linha Divisória Preta no Meio
+        tela.fill((135, 206, 235)) 
         pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
-
-        # Chãos Verdes
         pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
         pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-        # Placar na tela
+        # --- AQUI: Mude o HUD para usar os nomes recebidos ---
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
-        tela.blit(fonte.render(f"P1: {score1}", True, AZUL), (10, 10))
-        tela.blit(fonte.render(f"P2: {score2}", True, (200, 0, 0)), (10, HEIGHT//2 + 10))
+        
+        # Nome 1 no topo
+        tela.blit(fonte.render(f"{nome1}: {score1}", True, AZUL), (10, 10))
+        
+        # Nome 2 na metade
+        tela.blit(fonte.render(f"{nome2}: {score2}", True, (220, 0, 0)), (10, HEIGHT//2 + 10))
+
+        # Mensagens de "Bateu" usando o nome
+        if not player1.vivo:
+            msg = fonte.render(f"{nome1} BATEU!", True, PRETO)
+            tela.blit(msg, (WIDTH//2 - 50, chao_p1 - 100))
+        
+        if not player2.vivo:
+            msg = fonte.render(f"{nome2} BATEU!", True, PRETO)
+            tela.blit(msg, (WIDTH//2 - 50, chao_p2 - 100))
 
         pygame.display.update()
         CLOCK.tick(FPS)
 
-    # Retorna quem ganhou para exibir depois (opcional)
+    # No return final, substitua "JOGADOR 1" pelo nome real
     if score1 > score2:
-        return "JOGADOR 1", score1, score2
+        return nome1, score1, score2
     elif score2 > score1:
-        return "JOGADOR 2", score1, score2
+        return nome2, score1, score2
     else:
         return "EMPATE", score1, score2
 
@@ -409,11 +406,14 @@ def tela_vencedor(vencedor, score1, score2):
 # ---------------- MAIN ----------------
 def main():
     while True:
-        # Chama o jogo e pega o vencedor + as pontuações
-        vencedor, s1, s2 = jogo_multiplayer()
+        # 1. Pega os dois nomes
+        n1, n2 = tela_nomes_dupla()
         
-        # Mostra a tela de vencedor em vez do placar antigo
-        tela_vencedor(vencedor, s1, s2)
+        # 2. Passa os nomes para o jogo
+        vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2)
+        
+        # 3. Passa o resultado para a tela final
+        tela_vencedor(vencedor_nome, s1, s2)
 
 if __name__ == "__main__":
     main()
