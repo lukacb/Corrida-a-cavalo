@@ -173,3 +173,52 @@ def tela_placar(nome, score):
         pygame.display.update()
         CLOCK.tick(30)
 
+# ---------------- JOGO ----------------
+def jogo(nome):
+    player = Player()
+    obstacles = ObstacleManager()
+    score = 0
+    last = pygame.time.get_ticks()
+    game_over = False
+
+    while not game_over:
+        now = pygame.time.get_ticks()
+        dt = now - last
+        last = now
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key in (pygame.K_SPACE, pygame.K_UP):
+                    player.jump()
+
+        player.update()
+        obstacles.update(dt, score)
+        if obstacles.collide(player.rect):
+            game_over = True
+
+        score += dt // 5
+
+        tela.fill((135, 206, 235))
+        pygame.draw.rect(tela, VERDE, (0, GROUND_Y, WIDTH, HEIGHT))
+        player.draw()
+        obstacles.draw()
+
+        fonte = pygame.font.SysFont("Arial", 20)
+        tela.blit(fonte.render(f"{nome} | Score: {score}", True, PRETO), (10, 10))
+
+        pygame.display.update()
+        CLOCK.tick(FPS)
+
+    return score
+
+# ---------------- MAIN ----------------
+def main():
+    while True:
+        nome = tela_nome()
+        score = jogo(nome)
+        tela_placar(nome, score)
+
+if __name__ == "__main__":
+    main()
