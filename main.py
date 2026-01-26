@@ -262,6 +262,9 @@ def jogo(nome):
 
 # ---------------- MAIN ----------------
 def main():
+    if not os.path.exists(HIGHSCORES_FILE):
+        save_highscores([])
+
     while True:
         nome = tela_nome()
         score = jogo(nome)
