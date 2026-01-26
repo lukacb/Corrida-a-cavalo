@@ -8,7 +8,7 @@ import json
 import os
 
 pygame.init()
-WIDTH, HEIGHT = 900, 400
+WIDTH, HEIGHT = 900, 600
 tela = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hipismo Runner")
 
@@ -32,8 +32,8 @@ GROUND_Y = HEIGHT - 70
 
 # ---------------- PERSONAGENS ----------------
 PERSONAGENS = {
-    "corredor": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
-    "cavalo":   {"w": 64, "h": 48, "color": MARROM, "jump": 15, "grav": 0.95},
+    "p1": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
+    "p2": {"w": 36, "h": 48, "color": (220, 20, 60), "jump": 13, "grav": 0.72}, # Vermelho
 }
 
 #Placar
@@ -78,52 +78,66 @@ def update_highscores(name, score):
     return highscores
 
 # ---------------- JOGADOR ----------------
+# --- SUBSTITUA A CLASSE PLAYER INTEIRA POR ISSO ---
 class Player:
-    def __init__(self, tipo="corredor"):
+    def __init__(self, tipo, y_chao):
         p = PERSONAGENS[tipo]
         self.w, self.h = p["w"], p["h"]
         self.color = p["color"]
         self.jump_force = p["jump"]
         self.gravity = p["grav"]
-        self.rect = pygame.Rect(110, GROUND_Y - self.h, self.w, self.h)
+        self.y_chao = y_chao # Cada jogador tem seu próprio chão
+        
+        # Posição inicial baseada no chão específico
+        self.rect = pygame.Rect(110, self.y_chao - self.h, self.w, self.h)
         self.vy = 0
         self.on_ground = True
+        self.vivo = True 
 
     def jump(self):
-        if self.on_ground:
+        if self.on_ground and self.vivo:
             self.vy = -self.jump_force
             self.on_ground = False
 
     def update(self):
+        if not self.vivo:
+            return # Se morreu, congela
+
         if not self.on_ground:
             self.vy += self.gravity
             self.rect.y += int(self.vy)
-            if self.rect.bottom >= GROUND_Y:
-                self.rect.bottom = GROUND_Y
+            
+            # Colisão com o chão específico deste jogador
+            if self.rect.bottom >= self.y_chao:
+                self.rect.bottom = self.y_chao
                 self.vy = 0
                 self.on_ground = True
 
     def draw(self):
-        pygame.draw.rect(tela, self.color, self.rect, border_radius=6)
+        # Desenha cor normal se vivo, cinza se morreu
+        cor = self.color if self.vivo else (150, 150, 150)
+        pygame.draw.rect(tela, cor, self.rect, border_radius=6)
 
 # ---------------- OBSTÁCULOS ----------------
 OBSTACLE_W = 56
 OBSTACLE_H = 36
 
 class Obstacle:
-    def __init__(self, x, speed):
-        self.rect = pygame.Rect(x, GROUND_Y - OBSTACLE_H, OBSTACLE_W, OBSTACLE_H)
+    def __init__(self, x, speed, y_chao):
+        self.y_chao = y_chao
+        self.rect = pygame.Rect(x, self.y_chao - OBSTACLE_H, OBSTACLE_W, OBSTACLE_H)
         self.speed = speed
 
     def update(self, dt):
         self.rect.x -= int(self.speed * dt)
 
     def draw(self):
+        # Desenho adaptado para usar self.y_chao
         post_w = 6
         post_h = OBSTACLE_H + 16
 
-        left_post = pygame.Rect(self.rect.left, GROUND_Y - post_h, post_w, post_h)
-        right_post = pygame.Rect(self.rect.right - post_w, GROUND_Y - post_h, post_w, post_h)
+        left_post = pygame.Rect(self.rect.left, self.y_chao - post_h, post_w, post_h)
+        right_post = pygame.Rect(self.rect.right - post_w, self.y_chao - post_h, post_w, post_h)
 
         pygame.draw.rect(tela, MARROM, left_post)
         pygame.draw.rect(tela, MARROM, right_post)
@@ -132,20 +146,20 @@ class Obstacle:
         gap = OBSTACLE_H // (bar_count + 1)
 
         for i in range(bar_count):
-            y = (GROUND_Y - post_h) + gap * (i + 1)
+            y = (self.y_chao - post_h) + gap * (i + 1)
             bar = pygame.Rect(left_post.right, y, OBSTACLE_W - post_w * 2, 6)
             pygame.draw.rect(tela, AMARELO, bar, border_radius=3)
             pygame.draw.line(tela, BRANCO, bar.topleft, bar.topright, 1)
 
-# ---------------- GERENCIADOR ----------------
+# --- SUBSTITUA A CLASSE OBSTACLEMANAGER INTEIRA ---
 class ObstacleManager:
-    def __init__(self):
+    def __init__(self, y_chao):
         self.obstacles = []
         self.timer = 0
         self.speed = 6.0
+        self.y_chao = y_chao # Saber onde criar o obstaculo
 
     def update(self, dt_ms, score):
-        # aceleração gradual
         self.speed = 6.0 + min(4.0, max(0, (score - 1500) / 1200.0))
 
         self.timer += dt_ms
@@ -155,7 +169,8 @@ class ObstacleManager:
             x = WIDTH + gap
             if self.obstacles:
                 x = max(x, self.obstacles[-1].rect.right + gap)
-            self.obstacles.append(Obstacle(x, self.speed))
+            # Passa o y_chao para o obstáculo novo
+            self.obstacles.append(Obstacle(x, self.speed, self.y_chao))
 
         for obs in self.obstacles[:]:
             obs.update(dt_ms / 16.6)
@@ -267,17 +282,26 @@ def tela_placar(nome, score):
         pygame.display.update()
         CLOCK.tick(30)
 
-
-
 # ---------------- JOGO ----------------
-def jogo(nome):
-    player = Player()
-    obstacles = ObstacleManager()
-    score = 0
-    last = pygame.time.get_ticks()
-    game_over = False
 
-    while not game_over:
+def jogo_multiplayer():
+    # Definindo as "pistas"
+    chao_p1 = HEIGHT // 2 - 20  # Pista de Cima
+    chao_p2 = HEIGHT - 20       # Pista de Baixo
+
+    # Criando objetos independentes
+    player1 = Player("p1", chao_p1)
+    player2 = Player("p2", chao_p2)
+
+    manager1 = ObstacleManager(chao_p1)
+    manager2 = ObstacleManager(chao_p2)
+
+    score1 = 0
+    score2 = 0
+    last = pygame.time.get_ticks()
+    
+    # O loop roda enquanto PELO MENOS UM estiver vivo
+    while player1.vivo or player2.vivo:
         now = pygame.time.get_ticks()
         dt = now - last
         last = now
@@ -286,28 +310,58 @@ def jogo(nome):
             if e.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN:
-                if e.key in (pygame.K_SPACE, pygame.K_UP):
-                    player.jump()
+                # Controles Jogador 1 (W)
+                if e.key == pygame.K_w and player1.vivo:
+                    player1.jump()
+                # Controles Jogador 2 (Seta Cima)
+                if e.key == pygame.K_UP and player2.vivo:
+                    player2.jump()
+                if e.key == pygame.K_ESCAPE:
+                    pygame.quit(); sys.exit()
 
-        player.update()
-        obstacles.update(dt, score)
-        if obstacles.collide(player.rect):
-            game_over = True
+        # --- Lógica Jogador 1 ---
+        if player1.vivo:
+            player1.update()
+            manager1.update(dt, score1)
+            if manager1.collide(player1.rect):
+                player1.vivo = False # Morreu
+            else:
+                score1 += dt // 5
+        
+        # --- Lógica Jogador 2 ---
+        if player2.vivo:
+            player2.update()
+            manager2.update(dt, score2)
+            if manager2.collide(player2.rect):
+                player2.vivo = False # Morreu
+            else:
+                score2 += dt // 5
 
-        score += dt // 5
+        # --- Desenho ---
+        tela.fill((135, 206, 235)) # Céu
+        
+        # Linha Divisória Preta no Meio
+        pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
 
-        tela.fill((135, 206, 235))
-        pygame.draw.rect(tela, VERDE, (0, GROUND_Y, WIDTH, HEIGHT))
-        player.draw()
-        obstacles.draw()
+        # Chãos Verdes
+        pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
+        pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
-        fonte = pygame.font.SysFont("Arial", 20)
-        tela.blit(fonte.render(f"{nome} | Score: {score}", True, PRETO), (10, 10))
+        player1.draw(); manager1.draw()
+        player2.draw(); manager2.draw()
+
+        # Placar na tela
+        fonte = pygame.font.SysFont("Arial", 20, bold=True)
+        tela.blit(fonte.render(f"P1: {score1}", True, AZUL), (10, 10))
+        tela.blit(fonte.render(f"P2: {score2}", True, (200, 0, 0)), (10, HEIGHT//2 + 10))
 
         pygame.display.update()
         CLOCK.tick(FPS)
 
-    return score
+    # Retorna quem ganhou para exibir depois (opcional)
+    if score1 > score2: return "JOGADOR 1"
+    elif score2 > score1: return "JOGADOR 2"
+    else: return "EMPATE"
 
 # ---------------- MAIN ----------------
 def main():
@@ -316,7 +370,7 @@ def main():
 
     while True:
         nome = tela_nome()
-        score = jogo(nome)
+        score = jogo_multiplayer()
         tela_placar(nome, score)
 
 if __name__ == "__main__":
