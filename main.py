@@ -185,6 +185,106 @@ class ObstacleManager:
         return any(o.rect.colliderect(rect) for o in self.obstacles)
 
 # ---------------- TELAS ----------------
+def tela_regras():
+    fonte_titulo = pygame.font.SysFont("Arial", 40, bold=True)
+    fonte_texto = pygame.font.SysFont("Arial", 24)
+    
+    # Botão de Voltar
+    btn_voltar = pygame.Rect(WIDTH//2 - 100, HEIGHT - 100, 200, 50)
+
+    while True:
+        tela.fill(CINZA)
+        
+        # Título
+        titulo = fonte_titulo.render("REGRAS DO JOGO", True, PRETO)
+        tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 50))
+
+        # Texto das regras (Lista de strings)
+        linhas = [
+            "O objetivo é sobreviver o maior tempo possível.",
+            "Quem bater no obstáculo primeiro perde.",
+            "Se ambos baterem, ganha quem durou mais tempo.",
+            "",
+            "CONTROLES:",
+            "Jogador 1 (Tela de Cima): Tecla W",
+            "Jogador 2 (Tela de Baixo): Seta para CIMA",
+            "",
+            "Pressione ESC a qualquer momento para sair."
+        ]
+
+        # Desenhar cada linha centralizada
+        y = 120
+        for linha in linhas:
+            texto = fonte_texto.render(linha, True, PRETO)
+            tela.blit(texto, (WIDTH//2 - texto.get_width()//2, y))
+            y += 35
+
+        # Desenhar Botão Voltar
+        pygame.draw.rect(tela, AMARELO, btn_voltar, border_radius=10)
+        pygame.draw.rect(tela, PRETO, btn_voltar, 2, border_radius=10)
+        
+        txt_btn = fonte_texto.render("VOLTAR", True, PRETO)
+        tela.blit(txt_btn, (btn_voltar.centerx - txt_btn.get_width()//2, btn_voltar.centery - txt_btn.get_height()//2))
+
+        pygame.display.update()
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1: # Clique esquerdo
+                    if btn_voltar.collidepoint(e.pos):
+                        return # Sai da função regras e volta pro menu
+
+def tela_menu():
+    fonte = pygame.font.SysFont("Arial", 40, bold=True)
+    
+    # Definição dos Retângulos dos Botões (x, y, largura, altura)
+    btn_jogar = pygame.Rect(WIDTH//2 - 100, 200, 200, 60)
+    btn_regras = pygame.Rect(WIDTH//2 - 100, 300, 200, 60)
+
+    while True:
+        tela.fill(VERDE) # Fundo verde estilo grama
+
+        # Título do Jogo
+        titulo = fonte.render("HIPISMO RUNNER", True, BRANCO)
+        tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 80))
+
+        # --- Desenhar Botão JOGAR ---
+        # Detecta se o mouse está em cima para mudar a cor (efeito hover)
+        mouse_pos = pygame.mouse.get_pos()
+        cor_jogar = AMARELO if btn_jogar.collidepoint(mouse_pos) else (200, 150, 0)
+        
+        pygame.draw.rect(tela, cor_jogar, btn_jogar, border_radius=15)
+        pygame.draw.rect(tela, BRANCO, btn_jogar, 3, border_radius=15) # Borda
+        
+        txt_jogar = fonte.render("JOGAR", True, PRETO)
+        tela.blit(txt_jogar, (btn_jogar.centerx - txt_jogar.get_width()//2, btn_jogar.centery - txt_jogar.get_height()//2))
+
+        # --- Desenhar Botão REGRAS ---
+        cor_regras = AMARELO if btn_regras.collidepoint(mouse_pos) else (200, 150, 0)
+        
+        pygame.draw.rect(tela, cor_regras, btn_regras, border_radius=15)
+        pygame.draw.rect(tela, BRANCO, btn_regras, 3, border_radius=15) # Borda
+        
+        txt_regras = fonte.render("REGRAS", True, PRETO)
+        tela.blit(txt_regras, (btn_regras.centerx - txt_regras.get_width()//2, btn_regras.centery - txt_regras.get_height()//2))
+
+        pygame.display.update()
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1: # Botão esquerdo do mouse
+                    if btn_jogar.collidepoint(e.pos):
+                        return # Sai do menu e vai pro jogo
+                    
+                    if btn_regras.collidepoint(e.pos):
+                        tela_regras() # Entra na tela de regras (e espera voltar)
+
 def tela_nomes_dupla():
     nomes = ["", ""] # Lista para guardar [Nome1, Nome2]
     atual = 0 # 0 = editando P1, 1 = editando P2
@@ -444,16 +544,19 @@ def tela_vencedor(vencedor, score1, score2):
 # ---------------- MAIN ----------------
 def main():
     while True:
-        # 1. Pega os dois nomes
+        # 1. Tela de Nomes
         n1, n2 = tela_nomes_dupla()
         
-        # 2. Passa os nomes para o jogo
+        # 2. Tela de Menu (NOVO)
+        # O código fica preso aqui até a pessoa clicar em "JOGAR"
+        tela_menu()
+        
+        # 3. O Jogo começa
         vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2)
         
-        # 3. Passa o resultado para a tela final
+        # 4. Tela de Vencedor
         tela_vencedor(vencedor_nome, s1, s2)
 
 if __name__ == "__main__":
     main()
-
 
