@@ -6,6 +6,8 @@ import json
 import os
 
 pygame.init()
+pygame.mixer.init()
+
 
 WIDTH, HEIGHT = 900, 600
 tela = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -40,6 +42,12 @@ OPCOES_CAVALOS = [
     {"nome": "Esmeralda (Verde)", "cor": (0, 100, 0)},
     {"nome": "Violeta (Roxo)", "cor": (138, 43, 226)},
 ]
+# ---------------- MÚSICA ----------------
+try:
+    pygame.mixer.music.load("cavalopreto.ogg")
+    pygame.mixer.music.set_volume(0.4)  # volume de 0.0 a 1.0
+except Exception as e:
+    print("Erro ao carregar música:", e)
 
 #Pontuação
 HIGHSCORES_FILE = "highscores.json"
@@ -540,8 +548,10 @@ def tela_placar(nome, score):
 
 # ---------------- JOGO ----------------
 
-def jogo_multiplayer(nome1, nome2, cor1, cor2): 
-    # Setup inicial das pistas
+def jogo_multiplayer(nome1, nome2, cor1, cor2):
+    pygame.mixer.music.play(-1)  # -1 = loop infinito
+
+
     # Valores ajustados para se alinharem com a imagem do hipódromo
     chao_p1 = 355
     chao_p2 = 545
@@ -673,10 +683,16 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
 
     
     if score1 > score2:
+        pygame.mixer.music.stop()
+
         return nome1, score1, score2
     elif score2 > score1:
+        pygame.mixer.music.stop()
+
         return nome2, score1, score2
     else:
+        pygame.mixer.music.stop()
+
         return "EMPATE", score1, score2
 
 def tela_vencedor(vencedor, score1, score2):
