@@ -531,8 +531,7 @@ def tela_placar(nome, score):
 
 def jogo_multiplayer(nome1, nome2, cor1, cor2): 
     # Setup inicial das pistas
-    # Valores ajustados para se alinharem com a imagem do hipódromo (visão lateral)
-    # Ajuste se necessário dependendo da sua imagem
+    # Valores ajustados para se alinharem com a imagem do hipódromo
     chao_p1 = 355
     chao_p2 = 545
     
@@ -604,7 +603,7 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-       # HUD 
+        # HUD 
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
 
         # === COORDENADAS DO PLACAR PRETO ===
@@ -635,14 +634,28 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         tela.blit(score_surf_2, (x2 + nome_surf_2.get_width() + 8, y2))
 
 
-        # Mensagens de "Bateu"
+        # --- MENSAGENS DE "BATEU" (MODIFICADO) ---
+        # Fonte um pouco maior para o aviso
+        fonte_aviso = pygame.font.SysFont("Arial", 30, bold=True)
+
         if not player1.vivo:
-            msg = fonte.render(f"{nome1} BATEU!", True, PRETO)
-            tela.blit(msg, (WIDTH//2 - 50, chao_p1 - 100))
+            # Texto Branco
+            msg = fonte_aviso.render(f"{nome1} BATEU!", True, BRANCO)
+            # Centraliza no eixo X
+            msg_x = WIDTH // 2 - msg.get_width() // 2
+            # Posição Y no topo (nuvens)
+            msg_y = 30 
+            tela.blit(msg, (msg_x, msg_y))
         
         if not player2.vivo:
-            msg = fonte.render(f"{nome2} BATEU!", True, PRETO)
-            tela.blit(msg, (WIDTH//2 - 50, chao_p2 - 100))
+            # Texto Branco
+            msg = fonte_aviso.render(f"{nome2} BATEU!", True, BRANCO)
+            # Centraliza no eixo X
+            msg_x = WIDTH // 2 - msg.get_width() // 2
+            # Posição Y um pouco abaixo do aviso do P1 para não encavalar
+            msg_y = 35
+            tela.blit(msg, (msg_x, msg_y))
+        # ------------------------------------------
 
         pygame.display.update()
         CLOCK.tick(FPS)
