@@ -1,4 +1,4 @@
-# hipismo_runner_fixed_down.py
+# hipismo_runner.py
 import pygame
 import sys
 import random
@@ -9,7 +9,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 900, 600
 tela = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Hipismo Runner - Corrigido (cavalos mais baixos)")
+pygame.display.set_caption("Hipismo Runner")
 
 CLOCK = pygame.time.Clock()
 FPS = 60
@@ -52,6 +52,7 @@ PERSONAGENS = {
     "p1": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
     "p2": {"w": 36, "h": 48, "color": (220, 20, 60), "jump": 13, "grav": 0.72}, # Vermelho
 }
+
 
 #---------------------SELECAO CAVALO----------------
 def tela_selecao_cavalos(nome1, nome2):
@@ -108,10 +109,10 @@ def tela_selecao_cavalos(nome1, nome2):
 
         pygame.display.update()
 
+
         if confirmado1 and confirmado2:
-            pygame.time.delay(300)
-            # Retorna nome e cor de cada cavalo
-            return cavalo1["nome"], cavalo1["cor"], cavalo2["nome"], cavalo2["cor"]
+            pygame.time.delay(300) 
+            return cavalo1["cor"], cavalo2["cor"]
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -238,7 +239,6 @@ class Obstacle:
         self.speed = speed
 
     def update(self, dt):
-        # dt aqui é normalizado para frames no código atual; mantive a lógica original
         self.rect.x -= int(self.speed * dt)
 
     def draw(self):
@@ -304,6 +304,7 @@ class ObstacleManager:
     def collide(self, rect):
         return any(o.rect.colliderect(rect) for o in self.obstacles)
 
+
 # ---------------- TELAS ----------------
 def tela_regras():
     fonte_titulo = pygame.font.SysFont("Arial", 40, bold=True)
@@ -326,8 +327,8 @@ def tela_regras():
             "Se ambos baterem, ganha quem durou mais tempo.",
             "",
             "CONTROLES:",
-            "Jogador 1 (Topo): Tecla W",
-            "Jogador 2 (Baixo): Seta para CIMA",
+            "Jogador 1 (Tela de Cima): Tecla W",
+            "Jogador 2 (Tela de Baixo): Seta para CIMA",
             "",
             "Pressione ESC a qualquer momento para sair."
         ]
@@ -529,13 +530,17 @@ def tela_placar(nome, score):
 # ---------------- JOGO ----------------
 
 def jogo_multiplayer(nome1, nome2, cor1, cor2): 
-    # Setup inicial das pistas (cavalos e obstáculos posicionados mais para baixo)
-    chao_p1 = 370  # ANTES: 330
-    chao_p2 = 560  # ANTES: 520
+    # Setup inicial das pistas
+    # Valores ajustados para se alinharem com a imagem do hipódromo (visão lateral)
+    # Ajuste se necessário dependendo da sua imagem
+    chao_p1 = 355
+    chao_p2 = 545
     
+    # Passamos a cor escolhida (cor1/cor2) para cada Player
     player1 = Player("p1", chao_p1, cor_personalizada=cor1)
     player2 = Player("p2", chao_p2, cor_personalizada=cor2)
     
+    # Gerenciadores de obstáculos
     manager1 = ObstacleManager(chao_p1)
     manager2 = ObstacleManager(chao_p2)
     
@@ -585,12 +590,13 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
                 score2 += dt // 5
 
         # 4. Desenho
+        # Se a imagem de fundo foi carregada, usa-a. Caso contrário, desenha o fundo padrão.
         if BG_IMAGE:
             tela.blit(BG_IMAGE, (0, 0))
         else:
             tela.fill((135, 206, 235)) # Céu
+            # Cenário alternativo
             pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
-            # desenha os "chãos" com base nas variáveis novas
             pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
             pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
@@ -598,20 +604,36 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-        # HUD 
+       # HUD 
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
 
-        # --- Jogador 1 (Topo) ---
-        nome_surf_1 = fonte.render(f"{nome1}:", True, cor1)
-        score_surf_1 = fonte.render(f"{int(score1)}", True, BRANCO)
-        tela.blit(nome_surf_1, (10, 10))
-        tela.blit(score_surf_1, (10 + nome_surf_1.get_width() + 8, 10))
+        # === COORDENADAS DO PLACAR PRETO ===
+        PLACAR_X = 40
+        PLACAR_LARGURA = 220
 
-        # --- Jogador 2 (Meio) ---
-        nome_surf_2 = fonte.render(f"{nome2}:", True, cor2)
-        score_surf_2 = fonte.render(f"{int(score2)}", True, BRANCO)
-        tela.blit(nome_surf_2, (10, HEIGHT//2 + 10))
-        tela.blit(score_surf_2, (10 + nome_surf_2.get_width() + 8, HEIGHT//2 + 10))
+        # -------- Jogador 1 (placar de cima) --------
+        y1 = 215
+        nome_surf_1 = fonte.render(f"{nome1}", True, cor1)
+        score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
+        
+        total_w1 = nome_surf_1.get_width() + 8 + score_surf_1.get_width()
+        x1 = PLACAR_X + (PLACAR_LARGURA - total_w1) // 2
+
+        tela.blit(nome_surf_1, (x1, y1))
+        tela.blit(score_surf_1, (x1 + nome_surf_1.get_width() + 8, y1))
+
+
+        # -------- Jogador 2 (placar de baixo) --------
+        y2 = 250
+        nome_surf_2 = fonte.render(f"{nome2}", True, cor2)
+        score_surf_2 = fonte.render(f"{score2}", True, BRANCO)
+
+        total_w2 = nome_surf_2.get_width() + 8 + score_surf_2.get_width()
+        x2 = PLACAR_X + (PLACAR_LARGURA - total_w2) // 2
+
+        tela.blit(nome_surf_2, (x2, y2))
+        tela.blit(score_surf_2, (x2 + nome_surf_2.get_width() + 8, y2))
+
 
         # Mensagens de "Bateu"
         if not player1.vivo:
@@ -625,18 +647,15 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         pygame.display.update()
         CLOCK.tick(FPS)
 
-    # Normaliza e retorna (vencedor_nome, score_vencedor, score_perdedor)
-    score1 = int(score1)
-    score2 = int(score2)
+    
     if score1 > score2:
         return nome1, score1, score2
     elif score2 > score1:
-        return nome2, score2, score1
+        return nome2, score1, score2
     else:
-        # empate: devolvemos "EMPATE" e mantemos ordem P1,P2 nos scores
         return "EMPATE", score1, score2
 
-def tela_vencedor(vencedor, score_vencedor, score_perdedor, nome1=None, nome2=None, cor1=None, cor2=None):
+def tela_vencedor(vencedor, score1, score2):
     fonte_grande = pygame.font.SysFont("Arial", 60, bold=True)
     fonte_media = pygame.font.SysFont("Arial", 30)
 
@@ -644,30 +663,25 @@ def tela_vencedor(vencedor, score_vencedor, score_perdedor, nome1=None, nome2=No
         tela.fill(CINZA)
         
         # Mostra quem ganhou
+        texto_venc = f"VENCEDOR: {vencedor}"
         if vencedor == "EMPATE":
-            texto_venc = f"EMPATE!"
             cor = PRETO
+        elif vencedor == "JOGADOR 1":
+            cor = AZUL
         else:
-            texto_venc = f"VENCEDOR: {vencedor}"
-            # escolhe cor do vencedor com base nos nomes passados (se disponíveis)
-            if nome1 and vencedor == nome1 and cor1:
-                cor = cor1
-            elif nome2 and vencedor == nome2 and cor2:
-                cor = cor2
-            else:
-                cor = PRETO
+            cor = (220, 20, 60) # Vermelho
 
         surf_venc = fonte_grande.render(texto_venc, True, cor)
         tela.blit(surf_venc, (WIDTH//2 - surf_venc.get_width()//2, 150))
 
         # Mostra os pontos finais
-        txt_s1 = fonte_media.render(f"Pontos Vencedor: {score_vencedor}", True, PRETO)
-        txt_s2 = fonte_media.render(f"Pontos Oponente: {score_perdedor}", True, PRETO)
+        txt_s1 = fonte_media.render(f"P1 (Azul): {score1}", True, AZUL)
+        txt_s2 = fonte_media.render(f"P2 (Vermelho): {score2}", True, (220, 20, 60))
         
         tela.blit(txt_s1, (WIDTH//2 - txt_s1.get_width()//2, 250))
         tela.blit(txt_s2, (WIDTH//2 - txt_s2.get_width()//2, 290))
 
-        cmd = fonte_media.render("Pressione R para Reiniciar, P para Placares, ou ESC para Sair", True, PRETO)
+        cmd = fonte_media.render("Pressione R para Reiniciar ou ESC para Sair", True, PRETO)
         tela.blit(cmd, (WIDTH//2 - cmd.get_width()//2, 450))
 
         pygame.display.update()
@@ -677,12 +691,7 @@ def tela_vencedor(vencedor, score_vencedor, score_perdedor, nome1=None, nome2=No
                 pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_r:
-                    return  # volta ao loop principal (reinicia)
-                if e.key == pygame.K_p:
-                    # abre a tela de placar e salva o vencedor
-                    nome_para_placar = vencedor if vencedor != "EMPATE" else "EMPATE"
-                    tela_placar(nome_para_placar, score_vencedor)
-                    # depois volta à tela do vencedor
+                    return 
                 if e.key == pygame.K_ESCAPE:
                     pygame.quit(); sys.exit()
 
@@ -694,27 +703,11 @@ def main():
 
         n1, n2 = tela_nomes_dupla()
 
-        # Agora retorna (nome_cavalo1, cor1, nome_cavalo2, cor2)
-        cavalo1_nome, c1_cor, cavalo2_nome, c2_cor = tela_selecao_cavalos(n1, n2)
+        c1, c2 = tela_selecao_cavalos(n1, n2)
         
-        vencedor_nome, s_vencedor, s_perdedor = jogo_multiplayer(n1, n2, c1_cor, c2_cor)
+        vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2, c1, c2)
         
-        # Mostra tela do vencedor (permite ver placar com P)
-        tela_vencedor(vencedor_nome, s_vencedor, s_perdedor, nome1=n1, nome2=n2, cor1=c1_cor, cor2=c2_cor)
-
-        # Após sair da tela_vencedor, mostramos/salvamos o placar automaticamente
-        # Se houver vencedor real, include o nome do cavalo no texto do recorde
-        if vencedor_nome == "EMPATE":
-            tela_placar("EMPATE", s_vencedor)
-        else:
-            # Determina cavalo do vencedor para mostrar no placar
-            if vencedor_nome == n1:
-                exibicao_nome = f"{vencedor_nome} ({cavalo1_nome})"
-            elif vencedor_nome == n2:
-                exibicao_nome = f"{vencedor_nome} ({cavalo2_nome})"
-            else:
-                exibicao_nome = vencedor_nome
-            tela_placar(exibicao_nome, s_vencedor)
+        tela_vencedor(vencedor_nome, s1, s2)
 
 if __name__ == "__main__":
     main()

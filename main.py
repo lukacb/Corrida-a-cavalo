@@ -604,20 +604,36 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-        # HUD 
+       # HUD 
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
 
-        # --- Jogador 1 (Topo) ---
-        nome_surf_1 = fonte.render(f"{nome1}:", True, cor1)
-        score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
-        tela.blit(nome_surf_1, (10, 10))
-        tela.blit(score_surf_1, (10 + nome_surf_1.get_width() + 8, 10))
+        # === COORDENADAS DO PLACAR PRETO ===
+        PLACAR_X = 40
+        PLACAR_LARGURA = 220
 
-        # --- Jogador 2 (Meio) ---
-        nome_surf_2 = fonte.render(f"{nome2}:", True, cor2)
+        # -------- Jogador 1 (placar de cima) --------
+        y1 = 215
+        nome_surf_1 = fonte.render(f"{nome1}", True, cor1)
+        score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
+        
+        total_w1 = nome_surf_1.get_width() + 8 + score_surf_1.get_width()
+        x1 = PLACAR_X + (PLACAR_LARGURA - total_w1) // 2
+
+        tela.blit(nome_surf_1, (x1, y1))
+        tela.blit(score_surf_1, (x1 + nome_surf_1.get_width() + 8, y1))
+
+
+        # -------- Jogador 2 (placar de baixo) --------
+        y2 = 250
+        nome_surf_2 = fonte.render(f"{nome2}", True, cor2)
         score_surf_2 = fonte.render(f"{score2}", True, BRANCO)
-        tela.blit(nome_surf_2, (10, HEIGHT//2 + 10))
-        tela.blit(score_surf_2, (10 + nome_surf_2.get_width() + 8, HEIGHT//2 + 10))
+
+        total_w2 = nome_surf_2.get_width() + 8 + score_surf_2.get_width()
+        x2 = PLACAR_X + (PLACAR_LARGURA - total_w2) // 2
+
+        tela.blit(nome_surf_2, (x2, y2))
+        tela.blit(score_surf_2, (x2 + nome_surf_2.get_width() + 8, y2))
+
 
         # Mensagens de "Bateu"
         if not player1.vivo:
