@@ -261,18 +261,26 @@ class Obstacle:
             pygame.draw.rect(tela, AMARELO, bar, border_radius=3)
             pygame.draw.line(tela, BRANCO, bar.topleft, bar.topright, 1)
 
-# ---  A CLASSE OBSTACLEMANAGER  ---
 class ObstacleManager:
     def __init__(self, y_chao):
         self.obstacles = []
         self.timer = 0
-        self.speed = 6.0
-        self.y_chao = y_chao 
+        self.y_chao = y_chao
+
+        # Configurações de velocidade
+        self.BASE_SPEED = 8.0
+        self.SPEED_STEP = 1.0      # quanto aumenta a cada 5000 pontos
+        self.MAX_SPEED = 12.0      # limite máximo
+        self.speed = self.BASE_SPEED
 
     def update(self, dt_ms, score):
-        # speed escala levemente com score para aumentar dificuldade
-        self.speed = 6.0 + min(4.0, max(0, (score - 1500) / 1200.0))
+        # --- AUMENTA A VELOCIDADE A CADA 5000 PONTOS ---
+        nivel = score // 5000
+        self.speed = self.BASE_SPEED + nivel * self.SPEED_STEP
+        if self.speed > self.MAX_SPEED:
+            self.speed = self.MAX_SPEED
 
+        # Timer para gerar obstáculos
         self.timer += dt_ms
         if self.timer > random.randint(1200, 2200):
             self.timer = 0
@@ -280,9 +288,10 @@ class ObstacleManager:
             x = WIDTH + gap
             if self.obstacles:
                 x = max(x, self.obstacles[-1].rect.right + gap)
-            # Passa o y_chao para o obstáculo novo
+
             self.obstacles.append(Obstacle(x, self.speed, self.y_chao))
 
+        # Atualiza obstáculos existentes (normaliza dt para frames)
         for obs in self.obstacles[:]:
             obs.update(dt_ms / 16.6)
             if obs.rect.right < 0:
@@ -294,6 +303,7 @@ class ObstacleManager:
 
     def collide(self, rect):
         return any(o.rect.colliderect(rect) for o in self.obstacles)
+
 
 # ---------------- TELAS ----------------
 def tela_regras():
