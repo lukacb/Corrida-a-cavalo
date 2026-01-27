@@ -606,12 +606,18 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
 
         # HUD 
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
-        
-        # Nome e Pontos P1 (Topo)
-        tela.blit(fonte.render(f"{nome1}: {score1}", True, cor1), (10, 10))
-        
-        # Nome e Pontos P2 (Meio)
-        tela.blit(fonte.render(f"{nome2}: {score2}", True, cor2), (10, HEIGHT//2 + 10))
+
+        # --- Jogador 1 (Topo) ---
+        nome_surf_1 = fonte.render(f"{nome1}:", True, cor1)
+        score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
+        tela.blit(nome_surf_1, (10, 10))
+        tela.blit(score_surf_1, (10 + nome_surf_1.get_width() + 8, 10))
+
+        # --- Jogador 2 (Meio) ---
+        nome_surf_2 = fonte.render(f"{nome2}:", True, cor2)
+        score_surf_2 = fonte.render(f"{score2}", True, BRANCO)
+        tela.blit(nome_surf_2, (10, HEIGHT//2 + 10))
+        tela.blit(score_surf_2, (10 + nome_surf_2.get_width() + 8, HEIGHT//2 + 10))
 
         # Mensagens de "Bateu"
         if not player1.vivo:
