@@ -259,12 +259,21 @@ class ObstacleManager:
     def __init__(self, y_chao):
         self.obstacles = []
         self.timer = 0
-        self.speed = 6.0
-        self.y_chao = y_chao 
+        self.y_chao = y_chao
+
+        # Configurações de velocidade
+        self.BASE_SPEED = 8.0
+        self.SPEED_STEP = 1      # quanto aumenta a cada 5000 pontos
+        self.MAX_SPEED = 12.0     # limite máximo
+        self.speed = self.BASE_SPEED
 
     def update(self, dt_ms, score):
-        self.speed = 6.0 + min(4.0, max(0, (score - 1500) / 1200.0))
+        # --- AUMENTA A VELOCIDADE A CADA 5000 PONTOS ---
+        nivel = score // 5000
+        self.speed = self.BASE_SPEED + nivel * self.SPEED_STEP
+        self.speed = min(self.speed, self.MAX_SPEED)
 
+        # Timer para gerar obstáculos
         self.timer += dt_ms
         if self.timer > random.randint(1200, 2200):
             self.timer = 0
@@ -272,8 +281,26 @@ class ObstacleManager:
             x = WIDTH + gap
             if self.obstacles:
                 x = max(x, self.obstacles[-1].rect.right + gap)
+
+            self.obstacles.append(
+                Obstacle(x, self.speed, self.y_chao)
+            )
+
+        # Atualiza obstáculos existentes
+        for obs in self.obstacles[:]:
+            obs.update(dt_ms / 16.6)
+            if obs.rect.right < 0:
+                self.obstacles.remove(obs)
+
+    def draw(self):
+        for o in self.obstacles:
+            o.draw()
+
+    def collide(self, rect):
+        return any(o.rect.colliderect(rect) for o in self.obstacles)
+
             # Passa o y_chao para o obstáculo novo
-            self.obstacles.append(Obstacle(x, self.speed, self.y_chao))
+        self.obstacles.append(Obstacle(x, self.speed, self.y_chao))
 
         for obs in self.obstacles[:]:
             obs.update(dt_ms / 16.6)
