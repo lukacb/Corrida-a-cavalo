@@ -361,9 +361,11 @@ def tela_regras():
 def tela_menu():
     fonte = pygame.font.SysFont("Arial", 40, bold=True)
     
-    # Definição dos Retângulos dos Botões (x, y, largura, altura)
+    # --- Definição dos Retângulos dos Botões (x, y, largura, altura) ---
     btn_jogar = pygame.Rect(WIDTH//2 - 100, 200, 200, 60)
     btn_regras = pygame.Rect(WIDTH//2 - 100, 300, 200, 60)
+    # Novo botão SAIR (logo abaixo de regras)
+    btn_sair = pygame.Rect(WIDTH//2 - 100, 400, 200, 60)
 
     while True:
         tela.fill(VERDE) # Fundo verde estilo grama
@@ -372,25 +374,30 @@ def tela_menu():
         titulo = fonte.render("HIPISMO RUNNER", True, BRANCO)
         tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 80))
 
-        # --- Desenhar Botão JOGAR ---
-        # Detecta se o mouse está em cima para mudar a cor (efeito hover)
         mouse_pos = pygame.mouse.get_pos()
+
+        # --- Botão JOGAR ---
         cor_jogar = AMARELO if btn_jogar.collidepoint(mouse_pos) else (200, 150, 0)
-        
         pygame.draw.rect(tela, cor_jogar, btn_jogar, border_radius=15)
-        pygame.draw.rect(tela, BRANCO, btn_jogar, 3, border_radius=15) # Borda
-        
+        pygame.draw.rect(tela, BRANCO, btn_jogar, 3, border_radius=15)
         txt_jogar = fonte.render("JOGAR", True, PRETO)
         tela.blit(txt_jogar, (btn_jogar.centerx - txt_jogar.get_width()//2, btn_jogar.centery - txt_jogar.get_height()//2))
 
-        # --- Desenhar Botão REGRAS ---
+        # --- Botão REGRAS ---
         cor_regras = AMARELO if btn_regras.collidepoint(mouse_pos) else (200, 150, 0)
-        
         pygame.draw.rect(tela, cor_regras, btn_regras, border_radius=15)
-        pygame.draw.rect(tela, BRANCO, btn_regras, 3, border_radius=15) # Borda
-        
+        pygame.draw.rect(tela, BRANCO, btn_regras, 3, border_radius=15)
         txt_regras = fonte.render("REGRAS", True, PRETO)
         tela.blit(txt_regras, (btn_regras.centerx - txt_regras.get_width()//2, btn_regras.centery - txt_regras.get_height()//2))
+
+        # --- Botão SAIR (NOVO) ---
+        # Se passar o mouse, fica vermelho claro, senão vermelho escuro
+        cor_sair = (255, 100, 100) if btn_sair.collidepoint(mouse_pos) else (200, 50, 50)
+        
+        pygame.draw.rect(tela, cor_sair, btn_sair, border_radius=15)
+        pygame.draw.rect(tela, BRANCO, btn_sair, 3, border_radius=15)
+        txt_sair = fonte.render("SAIR", True, PRETO)
+        tela.blit(txt_sair, (btn_sair.centerx - txt_sair.get_width()//2, btn_sair.centery - txt_sair.get_height()//2))
 
         pygame.display.update()
 
@@ -399,12 +406,15 @@ def tela_menu():
                 pygame.quit(); sys.exit()
             
             if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1: # Botão esquerdo do mouse
+                if e.button == 1: # Clique esquerdo
                     if btn_jogar.collidepoint(e.pos):
-                        return # Sai do menu e vai pro jogo
+                        return # Vai pro jogo
                     
                     if btn_regras.collidepoint(e.pos):
-                        tela_regras() # Entra na tela de regras (e espera voltar)
+                        tela_regras()
+                    
+                    if btn_sair.collidepoint(e.pos):
+                        pygame.quit(); sys.exit() # Fecha o jogo
 
 def tela_nomes_dupla():
     nomes = ["", ""] # Lista para guardar [Nome1, Nome2]
