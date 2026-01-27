@@ -1,5 +1,4 @@
 # hipismo_runner.py
-
 import pygame
 import sys
 import random
@@ -7,12 +6,21 @@ import json
 import os
 
 pygame.init()
+
 WIDTH, HEIGHT = 900, 600
 tela = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Hipismo Runner")
 
 CLOCK = pygame.time.Clock()
 FPS = 60
+
+# ---------------- CENÁRIO (IMAGEM) ----------------
+try:
+    BG_IMAGE = pygame.image.load("hipodromo_bg.png").convert()
+    BG_IMAGE = pygame.transform.scale(BG_IMAGE, (WIDTH, HEIGHT))
+except Exception as e:
+    BG_IMAGE = None
+    print("Aviso: não foi possível carregar 'hipodromo_bg.png'. Erro:", e)
 
 # Cores
 BRANCO = (255, 255, 255)
@@ -51,7 +59,6 @@ def tela_selecao_cavalos(nome1, nome2):
     fonte = pygame.font.SysFont("Arial", 30)
     fonte_nome = pygame.font.SysFont("Arial", 40, bold=True)
     
-    # Índices da seleção atual (começam no 0 e 1 para serem diferentes)
     idx1 = 0
     idx2 = 1
     
@@ -102,9 +109,9 @@ def tela_selecao_cavalos(nome1, nome2):
 
         pygame.display.update()
 
-        # Checa se ambos confirmaram
+
         if confirmado1 and confirmado2:
-            pygame.time.delay(1000) # Espera 1 pra ver o "Pronto"
+            pygame.time.delay(300) 
             return cavalo1["cor"], cavalo2["cor"]
 
         for e in pygame.event.get():
@@ -120,7 +127,7 @@ def tela_selecao_cavalos(nome1, nome2):
                         idx1 = (idx1 + 1) % len(OPCOES_CAVALOS)
                     elif e.key == pygame.K_SPACE:
                         confirmado1 = True
-                elif e.key == pygame.K_SPACE: # Desconfirmar se apertar de novo
+                elif e.key == pygame.K_SPACE: 
                     confirmado1 = False
 
                 # Controles P2
@@ -263,6 +270,7 @@ class ObstacleManager:
         self.y_chao = y_chao 
 
     def update(self, dt_ms, score):
+        # speed escala levemente com score para aumentar dificuldade
         self.speed = 6.0 + min(4.0, max(0, (score - 1500) / 1200.0))
 
         self.timer += dt_ms
@@ -513,8 +521,10 @@ def tela_placar(nome, score):
 
 def jogo_multiplayer(nome1, nome2, cor1, cor2): 
     # Setup inicial das pistas
-    chao_p1 = HEIGHT // 2 - 20
-    chao_p2 = HEIGHT - 20
+    # Valores ajustados para se alinharem com a imagem do hipódromo (visão lateral)
+    # Ajuste se necessário dependendo da sua imagem
+    chao_p1 = 330
+    chao_p2 = 520
     
     # Passamos a cor escolhida (cor1/cor2) para cada Player
     player1 = Player("p1", chao_p1, cor_personalizada=cor1)
@@ -570,12 +580,15 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
                 score2 += dt // 5
 
         # 4. Desenho
-        tela.fill((135, 206, 235)) # Céu
-        
-        # Cenário
-        pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
-        pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
-        pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
+        # Se a imagem de fundo foi carregada, usa-a. Caso contrário, desenha o fundo padrão.
+        if BG_IMAGE:
+            tela.blit(BG_IMAGE, (0, 0))
+        else:
+            tela.fill((135, 206, 235)) # Céu
+            # Cenário alternativo
+            pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
+            pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
+            pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
         # Desenha os jogadores  e obstáculos
         player1.draw(); manager1.draw()
@@ -666,4 +679,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
