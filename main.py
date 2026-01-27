@@ -242,15 +242,14 @@ class Obstacle:
         self.rect.x -= int(self.speed * dt)
 
     def draw(self):
-        # Desenho adaptado para usar self.y_chao
         post_w = 6
         post_h = OBSTACLE_H + 16
 
         left_post = pygame.Rect(self.rect.left, self.y_chao - post_h, post_w, post_h)
         right_post = pygame.Rect(self.rect.right - post_w, self.y_chao - post_h, post_w, post_h)
 
-        pygame.draw.rect(tela, MARROM, left_post)
-        pygame.draw.rect(tela, MARROM, right_post)
+        pygame.draw.rect(tela, BRANCO, left_post)
+        pygame.draw.rect(tela, BRANCO, right_post)
 
         bar_count = 3
         gap = OBSTACLE_H // (bar_count + 1)
@@ -258,7 +257,9 @@ class Obstacle:
         for i in range(bar_count):
             y = (self.y_chao - post_h) + gap * (i + 1)
             bar = pygame.Rect(left_post.right, y, OBSTACLE_W - post_w * 2, 6)
-            pygame.draw.rect(tela, AMARELO, bar, border_radius=3)
+            
+            pygame.draw.rect(tela, AZUL, bar, border_radius=3)
+            
             pygame.draw.line(tela, BRANCO, bar.topleft, bar.topright, 1)
 
 class ObstacleManager:
@@ -274,8 +275,8 @@ class ObstacleManager:
         self.speed = self.BASE_SPEED
 
     def update(self, dt_ms, score):
-        # --- AUMENTA A VELOCIDADE A CADA 5000 PONTOS ---
-        nivel = score // 5000
+        # --- AUMENTA A VELOCIDADE A CADA 2000 PONTOS ---
+        nivel = score // 2000
         self.speed = self.BASE_SPEED + nivel * self.SPEED_STEP
         if self.speed > self.MAX_SPEED:
             self.speed = self.MAX_SPEED
