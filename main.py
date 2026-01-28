@@ -41,14 +41,45 @@ AZUL = (20, 120, 220)
 CINZA = (200, 200, 200)
 
 OPCOES_CAVALOS = [
-    {"nome": "Relâmpago (Azul)", "cor": AZUL},
-    {"nome": "Fúria (Vermelho)", "cor": (220, 20, 60)},
-    {"nome": "Fantasma (Cinza)", "cor": (100, 100, 100)},
-    {"nome": "Sombra (Preto)", "cor": (20, 20, 20)},
-    {"nome": "Ouro (Amarelo)", "cor": (218, 165, 32)},
-    {"nome": "Esmeralda (Verde)", "cor": (0, 100, 0)},
-    {"nome": "Violeta (Roxo)", "cor": (138, 43, 226)},
+    {"nome": "Relâmpago", "cor": AZUL, "img_key": "azul"},
+    {"nome": "Fúria", "cor": (220, 20, 60), "img_key": "vermelho"}, 
+    {"nome": "Fantasma", "cor": (169, 169, 169), "img_key": "cinza"},
+    {"nome": "Sombra", "cor": (20, 20, 20), "img_key": "sombra"},
+    {"nome": "Ouro", "cor": (218, 165, 32), "img_key": "ouro"},
+    {"nome": "Esmeralda", "cor": (0, 100, 0), "img_key": "verde"},
+    {"nome": "Violeta", "cor": (138, 43, 226), "img_key": "violeta"},
 ]
+
+# --- SPRITES DOS CAVALOS ---
+SPRITES_CAVALOS = {}
+
+def carregar_sprites():
+    # Agora a lista procura exatamente por esses nomes
+    # O "vermelho" vai procurar por "cavalo_andando_vermelho.png"
+    cores_arquivos = ["azul", "vermelho", "cinza", "sombra", "ouro", "verde", "violeta"]
+    
+    for cor in cores_arquivos:
+        try:
+            # 1. Carrega apenas a imagem ANDANDO
+            img_run = pygame.image.load(f"cavalo_andando_{cor}.png").convert_alpha()
+            img_run = pygame.transform.scale(img_run, (36, 48)) # Ajusta tamanho
+            
+            # 2. Como não tem imagem de pulo, usamos a mesma para os dois estados
+            SPRITES_CAVALOS[cor] = {
+                "run": img_run, 
+                "jump": img_run  # Usa a mesma imagem
+            }
+        except Exception as e:
+            print(f"Erro ao carregar cavalo {cor}: {e}")
+            # Fallback (quadrado branco) se der erro
+            fallback = pygame.Surface((36, 48))
+            fallback.fill(BRANCO)
+            SPRITES_CAVALOS[cor] = {"run": fallback, "jump": fallback}
+
+# Chame a função imediatamente
+carregar_sprites()
+
+
 # ---------------- MÚSICA ----------------
 try:
     pygame.mixer.music.load("cavalopreto.ogg")
@@ -73,88 +104,78 @@ PERSONAGENS = {
 def tela_selecao_cavalos(nome1, nome2):
     fonte = pygame.font.SysFont("Arial", 30)
     fonte_nome = pygame.font.SysFont("Arial", 40, bold=True)
-    
-    idx1 = 0
-    idx2 = 1
-    
-    confirmado1 = False
-    confirmado2 = False
+    idx1, idx2 = 0, 1
+    confirmado1, confirmado2 = False, False
 
     while True:
         tela.fill(VERDE)
         
-        # --- LADO P1 (Esquerda) ---
+        # --- LADO P1 ---
         cor_fundo1 = (200, 255, 200) if confirmado1 else (150, 200, 150)
         pygame.draw.rect(tela, cor_fundo1, (0, 0, WIDTH//2, HEIGHT))
-        
-        # Nome P1
         txt_n1 = fonte_nome.render(nome1, True, PRETO)
         tela.blit(txt_n1, (WIDTH//4 - txt_n1.get_width()//2, 50))
         
-        # Cavalo Selecionado P1
+        # DESENHO DO CAVALO P1 (NOVO)
         cavalo1 = OPCOES_CAVALOS[idx1]
-        pygame.draw.rect(tela, cavalo1["cor"], (WIDTH//4 - 40, 150, 80, 80), border_radius=10)
+        key1 = cavalo1["img_key"]
+        # Pegamos a imagem e aumentamos ela só para o menu (pra ficar bonito)
+        img_preview1 = pygame.transform.scale(SPRITES_CAVALOS[key1]["run"], (100, 130))
+        # Centraliza a imagem
+        img_rect1 = img_preview1.get_rect(center=(WIDTH//4, 200))
+        tela.blit(img_preview1, img_rect1)
+        
         txt_c1 = fonte.render(cavalo1["nome"], True, PRETO)
-        tela.blit(txt_c1, (WIDTH//4 - txt_c1.get_width()//2, 250))
-
-        # Status P1
-        status1 = "PRONTO!" if confirmado1 else "Escolha com W/S e ESPAÇO"
+        tela.blit(txt_c1, (WIDTH//4 - txt_c1.get_width()//2, 280))
+        
+        status1 = "PRONTO!" if confirmado1 else "W/S e ESPAÇO"
         txt_s1 = fonte.render(status1, True, PRETO)
         tela.blit(txt_s1, (WIDTH//4 - txt_s1.get_width()//2, 350))
 
-        # --- LADO P2 (Direita) ---
+        # --- LADO P2 ---
         cor_fundo2 = (200, 255, 200) if confirmado2 else (150, 200, 150)
         pygame.draw.rect(tela, cor_fundo2, (WIDTH//2, 0, WIDTH//2, HEIGHT))
         pygame.draw.line(tela, PRETO, (WIDTH//2, 0), (WIDTH//2, HEIGHT), 5)
-
-        # Nome P2
+        
         txt_n2 = fonte_nome.render(nome2, True, PRETO)
         tela.blit(txt_n2, (3*WIDTH//4 - txt_n2.get_width()//2, 50))
         
-        # Cavalo Selecionado P2
+        # DESENHO DO CAVALO P2 (NOVO)
         cavalo2 = OPCOES_CAVALOS[idx2]
-        pygame.draw.rect(tela, cavalo2["cor"], (3*WIDTH//4 - 40, 150, 80, 80), border_radius=10)
+        key2 = cavalo2["img_key"]
+        img_preview2 = pygame.transform.scale(SPRITES_CAVALOS[key2]["run"], (100, 130))
+        img_rect2 = img_preview2.get_rect(center=(3*WIDTH//4, 200))
+        tela.blit(img_preview2, img_rect2)
+        
         txt_c2 = fonte.render(cavalo2["nome"], True, PRETO)
-        tela.blit(txt_c2, (3*WIDTH//4 - txt_c2.get_width()//2, 250))
-
-        # Status P2
-        status2 = "PRONTO!" if confirmado2 else "Escolha com SETAS e ENTER"
+        tela.blit(txt_c2, (3*WIDTH//4 - txt_c2.get_width()//2, 280))
+        
+        status2 = "PRONTO!" if confirmado2 else "SETAS e ENTER"
         txt_s2 = fonte.render(status2, True, PRETO)
         tela.blit(txt_s2, (3*WIDTH//4 - txt_s2.get_width()//2, 350))
 
         pygame.display.update()
-
-
+        
+        # O retorno agora manda o DICIONARIO do cavalo inteiro, não só a cor
         if confirmado1 and confirmado2:
-            pygame.time.delay(300) 
-            return cavalo1["cor"], cavalo2["cor"]
+            pygame.time.delay(500)
+            return cavalo1, cavalo2 
 
+        # ... (Eventos de teclado continuam iguais) ...
         for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit(); sys.exit()
-            
+            if e.type == pygame.QUIT: pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN:
-                # Controles P1
                 if not confirmado1:
-                    if e.key == pygame.K_w:
-                        idx1 = (idx1 - 1) % len(OPCOES_CAVALOS)
-                    elif e.key == pygame.K_s:
-                        idx1 = (idx1 + 1) % len(OPCOES_CAVALOS)
-                    elif e.key == pygame.K_SPACE:
-                        confirmado1 = True
-                elif e.key == pygame.K_SPACE: 
-                    confirmado1 = False
+                    if e.key == pygame.K_w: idx1 = (idx1 - 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_s: idx1 = (idx1 + 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_SPACE: confirmado1 = True
+                elif e.key == pygame.K_SPACE: confirmado1 = False
 
-                # Controles P2
                 if not confirmado2:
-                    if e.key == pygame.K_UP:
-                        idx2 = (idx2 - 1) % len(OPCOES_CAVALOS)
-                    elif e.key == pygame.K_DOWN:
-                        idx2 = (idx2 + 1) % len(OPCOES_CAVALOS)
-                    elif e.key == pygame.K_RETURN:
-                        confirmado2 = True
-                elif e.key == pygame.K_RETURN:
-                    confirmado2 = False
+                    if e.key == pygame.K_UP: idx2 = (idx2 - 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_DOWN: idx2 = (idx2 + 1) % len(OPCOES_CAVALOS)
+                    elif e.key == pygame.K_RETURN: confirmado2 = True
+                elif e.key == pygame.K_RETURN: confirmado2 = False
 
 #Placar
 
@@ -199,21 +220,22 @@ def update_highscores(name, score):
 
 # ---------------- JOGADOR ----------------
 class Player:
-    def __init__(self, tipo, y_chao, cor_personalizada=None):
+    def __init__(self, tipo, y_chao, dados_cavalo=None):
         p = PERSONAGENS[tipo]
         self.w, self.h = p["w"], p["h"]
         
-        if cor_personalizada:
-            self.color = cor_personalizada
+        # Pega a chave da imagem (ex: 'azul') e carrega os sprites
+        if dados_cavalo:
+            self.color = dados_cavalo["cor"] # Mantemos a cor para o texto do placar
+            self.img_key = dados_cavalo["img_key"]
         else:
             self.color = p["color"]
-        # ---------------------------
-
+            self.img_key = "azul" # fallback
+            
         self.jump_force = p["jump"]
         self.gravity = p["grav"]
-        self.y_chao = y_chao # Cada jogador tem seu próprio chão
+        self.y_chao = y_chao
         
-        # Posição inicial baseada no chão específico
         self.rect = pygame.Rect(110, self.y_chao - self.h, self.w, self.h)
         self.vy = 0
         self.on_ground = True
@@ -225,23 +247,32 @@ class Player:
             self.on_ground = False
 
     def update(self):
-        if not self.vivo:
-            return # Se morreu, congela
-
+        if not self.vivo: return 
         if not self.on_ground:
             self.vy += self.gravity
             self.rect.y += int(self.vy)
-            
-            # Colisão com o chão específico deste jogador
             if self.rect.bottom >= self.y_chao:
                 self.rect.bottom = self.y_chao
                 self.vy = 0
                 self.on_ground = True
 
     def draw(self):
-        # Desenha com a cor escolhida se estiver vivo, ou cinza se morreu
-        cor = self.color if self.vivo else (150, 150, 150)
-        pygame.draw.rect(tela, cor, self.rect, border_radius=6)
+        if not self.vivo:
+            # Se morreu, desenha um retângulo cinza (ou poderia ser imagem pb)
+            pygame.draw.rect(tela, (100, 100, 100), self.rect, border_radius=6)
+            return
+
+        # Lógica da Animação
+        sprites = SPRITES_CAVALOS.get(self.img_key)
+        
+        if sprites:
+            if self.on_ground:
+                tela.blit(sprites["run"], self.rect) # Desenha correndo
+            else:
+                tela.blit(sprites["jump"], self.rect) # Desenha pulando
+        else:
+            # Fallback se não tiver imagem
+            pygame.draw.rect(tela, self.color, self.rect, border_radius=6)
 
 # ---------------- OBSTÁCULOS ----------------
 OBSTACLE_W = 56
@@ -551,17 +582,14 @@ def tela_placar(nome, score):
 
 # ---------------- JOGO ----------------
 
-def jogo_multiplayer(nome1, nome2, cor1, cor2):
-    pygame.mixer.music.play(-1)  # -1 = loop infinito
-
-
-    # Valores ajustados para se alinharem com a imagem do hipódromo
+def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2): 
+    # Setup inicial das pistas
     chao_p1 = 355
     chao_p2 = 545
     
-    # Passamos a cor escolhida (cor1/cor2) para cada Player
-    player1 = Player("p1", chao_p1, cor_personalizada=cor1)
-    player2 = Player("p2", chao_p2, cor_personalizada=cor2)
+    # Passamos o dicionário inteiro 'dados_cavalo' para o Player saber qual imagem usar
+    player1 = Player("p1", chao_p1, dados_cavalo=dados_c1)
+    player2 = Player("p2", chao_p2, dados_cavalo=dados_c2)
     
     # Gerenciadores de obstáculos
     manager1 = ObstacleManager(chao_p1)
@@ -573,7 +601,7 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
 
     # Loop Principal: Roda enquanto pelo menos um estiver vivo
     while player1.vivo or player2.vivo:
-        # 1. Cálculo do tempo (Delta Time)
+        # 1. Cálculo do tempo
         now = pygame.time.get_ticks()
         dt = now - last
         last = now
@@ -613,28 +641,29 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
                 score2 += dt // 5
 
         # 4. Desenho
-        # Se a imagem de fundo foi carregada, usa-a. Caso contrário, desenha o fundo padrão.
         if BG_IMAGE:
             tela.blit(BG_IMAGE, (0, 0))
         else:
             tela.fill((135, 206, 235)) # Céu
-            # Cenário alternativo
             pygame.draw.line(tela, PRETO, (0, HEIGHT//2), (WIDTH, HEIGHT//2), 4)
             pygame.draw.rect(tela, VERDE, (0, chao_p1, WIDTH, 20))
             pygame.draw.rect(tela, VERDE, (0, chao_p2, WIDTH, 20))
 
-        # Desenha os jogadores  e obstáculos
+        # Desenha os jogadores e obstáculos
         player1.draw(); manager1.draw()
         player2.draw(); manager2.draw()
 
-        # HUD 
+        # --- HUD (Placar) ---
         fonte = pygame.font.SysFont("Arial", 20, bold=True)
 
-        # === COORDENADAS DO PLACAR PRETO ===
+        # Pegamos a cor de dentro do dicionário de dados
+        cor1 = dados_c1["cor"]
+        cor2 = dados_c2["cor"]
+
         PLACAR_X = 40
         PLACAR_LARGURA = 220
 
-        # -------- Jogador 1 (placar de cima) --------
+        # -------- Jogador 1 (Placar Preto) --------
         y1 = 215
         nome_surf_1 = fonte.render(f"{nome1}", True, cor1)
         score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
@@ -645,8 +674,7 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         tela.blit(nome_surf_1, (x1, y1))
         tela.blit(score_surf_1, (x1 + nome_surf_1.get_width() + 8, y1))
 
-
-        # -------- Jogador 2 (placar de baixo) --------
+        # -------- Jogador 2 (Placar Preto) --------
         y2 = 250
         nome_surf_2 = fonte.render(f"{nome2}", True, cor2)
         score_surf_2 = fonte.render(f"{score2}", True, BRANCO)
@@ -658,44 +686,33 @@ def jogo_multiplayer(nome1, nome2, cor1, cor2):
         tela.blit(score_surf_2, (x2 + nome_surf_2.get_width() + 8, y2))
 
 
-        # --- MENSAGENS DE "BATEU" (MODIFICADO) ---
-        # Fonte um pouco maior para o aviso
+        # --- MENSAGENS DE "BATEU" (Branco e no Topo) ---
         fonte_aviso = pygame.font.SysFont("Arial", 30, bold=True)
 
         if not player1.vivo:
-            # Texto Branco
             msg = fonte_aviso.render(f"{nome1} BATEU!", True, BRANCO)
             # Centraliza no eixo X
             msg_x = WIDTH // 2 - msg.get_width() // 2
-            # Posição Y no topo (nuvens)
-            msg_y = 30 
+            # Posição Y fixa no topo (nuvens)
+            msg_y = 10 
             tela.blit(msg, (msg_x, msg_y))
         
         if not player2.vivo:
-            # Texto Branco
             msg = fonte_aviso.render(f"{nome2} BATEU!", True, BRANCO)
-            # Centraliza no eixo X
             msg_x = WIDTH // 2 - msg.get_width() // 2
-            # Posição Y um pouco abaixo do aviso do P1 para não encavalar
-            msg_y = 35
+            # Posição Y um pouco abaixo do aviso do P1
+            msg_y = 50
             tela.blit(msg, (msg_x, msg_y))
-        # ------------------------------------------
-
+        
         pygame.display.update()
         CLOCK.tick(FPS)
 
-    
+    # Retorno final
     if score1 > score2:
-        pygame.mixer.music.stop()
-
         return nome1, score1, score2
     elif score2 > score1:
-        pygame.mixer.music.stop()
-
         return nome2, score1, score2
     else:
-        pygame.mixer.music.stop()
-
         return "EMPATE", score1, score2
 
 def tela_vencedor(vencedor, score1, score2):
@@ -746,8 +763,7 @@ def main():
 
         n1, n2 = tela_nomes_dupla()
 
-        c1, c2 = tela_selecao_cavalos(n1, n2)
-        
+        c1, c2 = tela_selecao_cavalos(n1, n2) # c1 e c2 agora são dicionários, não cores
         vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2, c1, c2)
         
         tela_vencedor(vencedor_nome, s1, s2)
