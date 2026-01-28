@@ -30,6 +30,13 @@ try:
 except Exception as e:
     MENU_BG = None
     print("Aviso: Imagem 'menu_bg.png' não encontrada.")
+# ---------------- IMAGEM VENCEDOR ----------------
+try:
+    IMG_VENCEDOR = pygame.image.load("vencedor.png").convert_alpha()
+    IMG_VENCEDOR = pygame.transform.scale(IMG_VENCEDOR, (400, 180))
+except Exception as e:
+    IMG_VENCEDOR = None
+    print("Aviso: imagem 'vencedor.png' não encontrada.", e)
 
 # Cores
 BRANCO = (255, 255, 255)
@@ -715,6 +722,11 @@ def tela_vencedor(vencedor, score1, score2):
 
     while True:
         tela.fill(CINZA)
+                # --- IMAGEM DE VENCEDOR ---
+        if IMG_VENCEDOR:
+            img_rect = IMG_VENCEDOR.get_rect(center=(WIDTH//2, 90))
+            tela.blit(IMG_VENCEDOR, img_rect)
+
         
         # Mostra quem ganhou
         texto_venc = f"VENCEDOR: {vencedor}"
@@ -726,14 +738,16 @@ def tela_vencedor(vencedor, score1, score2):
             cor = (220, 20, 60) # Vermelho
 
         surf_venc = fonte_grande.render(texto_venc, True, cor)
-        tela.blit(surf_venc, (WIDTH//2 - surf_venc.get_width()//2, 150))
+        tela.blit(surf_venc, (WIDTH//2 - surf_venc.get_width()//2, 220))
+
 
         # Mostra os pontos finais
         txt_s1 = fonte_media.render(f"P1 (Azul): {score1}", True, AZUL)
         txt_s2 = fonte_media.render(f"P2 (Vermelho): {score2}", True, (220, 20, 60))
         
-        tela.blit(txt_s1, (WIDTH//2 - txt_s1.get_width()//2, 250))
-        tela.blit(txt_s2, (WIDTH//2 - txt_s2.get_width()//2, 290))
+        tela.blit(txt_s1, (WIDTH//2 - txt_s1.get_width()//2, 300))
+        tela.blit(txt_s2, (WIDTH//2 - txt_s2.get_width()//2, 340))
+
 
         cmd = fonte_media.render("Pressione R para Reiniciar ou ESC para Sair", True, PRETO)
         tela.blit(cmd, (WIDTH//2 - cmd.get_width()//2, 450))
