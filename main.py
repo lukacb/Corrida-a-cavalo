@@ -732,26 +732,23 @@ def tela_vencedor(vencedor, score1, score2):
         
         # Mostra quem ganhou
         texto_venc = f"VENCEDOR: {vencedor}"
-        if vencedor == "EMPATE":
-            cor = PRETO
-        elif vencedor == "JOGADOR 1":
-            cor = AZUL
-        else:
-            cor = (220, 20, 60) # Vermelho
+        surf_venc = fonte_grande.render(texto_venc, True, BRANCO)
 
-        surf_venc = fonte_grande.render(texto_venc, True, cor)
+
         tela.blit(surf_venc, (WIDTH//2 - surf_venc.get_width()//2, 220))
 
 
         # Mostra os pontos finais
-        txt_s1 = fonte_media.render(f"P1 (Azul): {score1}", True, AZUL)
-        txt_s2 = fonte_media.render(f"P2 (Vermelho): {score2}", True, (220, 20, 60))
+        txt_s1 = fonte_media.render(f"P1: {score1}", True, BRANCO)
+        txt_s2 = fonte_media.render(f"P2: {score2}", True, BRANCO)
+
         
         tela.blit(txt_s1, (WIDTH//2 - txt_s1.get_width()//2, 300))
         tela.blit(txt_s2, (WIDTH//2 - txt_s2.get_width()//2, 340))
 
 
-        cmd = fonte_media.render("Pressione R para Reiniciar ou ESC para Sair", True, PRETO)
+        cmd = fonte_media.render("Pressione R para Reiniciar ou ESC para Sair", True, BRANCO)
+
         tela.blit(cmd, (WIDTH//2 - cmd.get_width()//2, 450))
 
         pygame.display.update()
