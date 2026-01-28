@@ -259,7 +259,7 @@ class Player:
         self.gravity = p["grav"]
         self.y_chao = y_chao
         
-        self.rect = pygame.Rect(110, self.y_chao - self.h, self.w, self.h)
+        self.rect = pygame.Rect(200, self.y_chao - self.h, self.w, self.h)
         self.vy = 0
         self.on_ground = True
         self.vivo = True 
