@@ -46,6 +46,14 @@ AMARELO = (255, 200, 0)
 MARROM = (120, 72, 18)
 AZUL = (20, 120, 220)
 CINZA = (200, 200, 200)
+def desenha_texto_sombra(tela, fonte, texto, cor_texto, cor_sombra, x, y, offset=2):
+    sombra = fonte.render(texto, True, cor_sombra)
+    texto_render = fonte.render(texto, True, cor_texto)
+
+    # sombra (um pouco deslocada)
+    tela.blit(sombra, (x + offset, y + offset))
+    # texto principal
+    tela.blit(texto_render, (x, y))
 
 CAVALO_W = 100  
 CAVALO_H = 120
@@ -732,10 +740,13 @@ def tela_vencedor(vencedor, score1, score2):
         
         # Mostra quem ganhou
         texto_venc = f"VENCEDOR: {vencedor}"
-        surf_venc = fonte_grande.render(texto_venc, True, BRANCO)
+        x = WIDTH//2 - fonte_grande.size(texto_venc)[0]//2
+        desenha_texto_sombra(
+            tela, fonte_grande, texto_venc,
+            BRANCO, PRETO,
+            x, 220
+)
 
-
-        tela.blit(surf_venc, (WIDTH//2 - surf_venc.get_width()//2, 220))
 
 
         # Mostra os pontos finais
@@ -743,13 +754,28 @@ def tela_vencedor(vencedor, score1, score2):
         txt_s2 = fonte_media.render(f"P2: {score2}", True, BRANCO)
 
         
-        tela.blit(txt_s1, (WIDTH//2 - txt_s1.get_width()//2, 300))
-        tela.blit(txt_s2, (WIDTH//2 - txt_s2.get_width()//2, 340))
+        texto1 = f"P1: {score1}"
+        texto2 = f"P2: {score2}"
+
+        x1 = WIDTH//2 - fonte_media.size(texto1)[0]//2
+        x2 = WIDTH//2 - fonte_media.size(texto2)[0]//2
+
+        desenha_texto_sombra(tela, fonte_media, texto1, BRANCO, PRETO, x1, 300)
+        desenha_texto_sombra(tela, fonte_media, texto2, BRANCO, PRETO, x2, 340)
+
 
 
         cmd = fonte_media.render("Pressione R para Reiniciar ou ESC para Sair", True, BRANCO)
 
-        tela.blit(cmd, (WIDTH//2 - cmd.get_width()//2, 450))
+        cmd_texto = "Pressione R para Reiniciar ou ESC para Sair"
+        x_cmd = WIDTH//2 - fonte_media.size(cmd_texto)[0]//2
+
+        desenha_texto_sombra(
+            tela, fonte_media, cmd_texto,
+            BRANCO, PRETO,
+            x_cmd, 450
+)
+
 
         pygame.display.update()
 
