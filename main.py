@@ -37,6 +37,14 @@ try:
 except Exception as e:
     IMG_VENCEDOR = None
     print("Aviso: imagem 'vencedor.png' não encontrada.", e)
+# ---------------- IMAGEM PERGUNTA (TELA DE NOMES) ----------------
+try:
+    IMG_PERGUNTA = pygame.image.load("pergunta.png").convert()
+    IMG_PERGUNTA = pygame.transform.scale(IMG_PERGUNTA, (WIDTH, HEIGHT))
+except Exception as e:
+    IMG_PERGUNTA = None
+    print("Aviso: imagem 'pergunta.png' não encontrada.", e)
+
 
 # Cores
 BRANCO = (255, 255, 255)
@@ -474,7 +482,12 @@ def tela_nomes_dupla():
     fonte = pygame.font.SysFont("Arial", 36)
 
     while True:
-        tela.fill(VERDE)
+    # --- FUNDO DA TELA DE NOMES ---
+        if IMG_PERGUNTA:
+            tela.blit(IMG_PERGUNTA, (0, 0))
+        else:
+            tela.fill(VERDE)
+
 
         # Muda o título dependendo de quem estamos digitando
         if atual == 0:
