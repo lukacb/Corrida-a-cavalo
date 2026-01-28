@@ -24,6 +24,13 @@ except Exception as e:
     BG_IMAGE = None
     print("Aviso: não foi possível carregar 'hipodromo_bg.png'. Erro:", e)
 
+try:
+    MENU_BG = pygame.image.load("menu_bg.png").convert()
+    MENU_BG = pygame.transform.scale(MENU_BG, (WIDTH, HEIGHT))
+except Exception as e:
+    MENU_BG = None
+    print("Aviso: Imagem 'menu_bg.png' não encontrada.")
+
 # Cores
 BRANCO = (255, 255, 255)
 PRETO = (0, 0, 0)
@@ -370,18 +377,21 @@ def tela_regras():
 def tela_menu():
     fonte = pygame.font.SysFont("Arial", 40, bold=True)
     
-    # --- Definição dos Retângulos dos Botões (x, y, largura, altura) ---
-    btn_jogar = pygame.Rect(WIDTH//2 - 100, 200, 200, 60)
-    btn_regras = pygame.Rect(WIDTH//2 - 100, 300, 200, 60)
-    # Novo botão SAIR (logo abaixo de regras)
-    btn_sair = pygame.Rect(WIDTH//2 - 100, 400, 200, 60)
+    # --- POSIÇÕES DOS BOTÕES (Ajustadas para baixo) ---
+    # Antes eram 200, 300, 400. Agora baixamos todos em 100 pixels.
+    btn_jogar = pygame.Rect(WIDTH//2 - 100, 300, 200, 60)
+    btn_regras = pygame.Rect(WIDTH//2 - 100, 400, 200, 60)
+    btn_sair = pygame.Rect(WIDTH//2 - 100, 500, 200, 60)
 
     while True:
-        tela.fill(VERDE) # Fundo verde estilo grama
+        # --- DESENHO DO FUNDO ---
+        if MENU_BG:
+            tela.blit(MENU_BG, (0, 0))
+        else:
+            tela.fill(VERDE) 
 
-        # Título do Jogo
-        titulo = fonte.render("HIPISMO RUNNER", True, BRANCO)
-        tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 80))
+        # (REMOVI A PARTE QUE DESENHAVA O TÍTULO TEXTO AQUI)
+        # Como o MENU_BG já tem o título desenhado, não precisamos escrever por cima.
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -399,10 +409,8 @@ def tela_menu():
         txt_regras = fonte.render("REGRAS", True, PRETO)
         tela.blit(txt_regras, (btn_regras.centerx - txt_regras.get_width()//2, btn_regras.centery - txt_regras.get_height()//2))
 
-        # --- Botão SAIR (NOVO) ---
-        # Se passar o mouse, fica vermelho claro, senão vermelho escuro
+        # --- Botão SAIR ---
         cor_sair = (255, 100, 100) if btn_sair.collidepoint(mouse_pos) else (200, 50, 50)
-        
         pygame.draw.rect(tela, cor_sair, btn_sair, border_radius=15)
         pygame.draw.rect(tela, BRANCO, btn_sair, 3, border_radius=15)
         txt_sair = fonte.render("SAIR", True, PRETO)
@@ -415,15 +423,10 @@ def tela_menu():
                 pygame.quit(); sys.exit()
             
             if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1: # Clique esquerdo
-                    if btn_jogar.collidepoint(e.pos):
-                        return # Vai pro jogo
-                    
-                    if btn_regras.collidepoint(e.pos):
-                        tela_regras()
-                    
-                    if btn_sair.collidepoint(e.pos):
-                        pygame.quit(); sys.exit() # Fecha o jogo
+                if e.button == 1: 
+                    if btn_jogar.collidepoint(e.pos): return 
+                    if btn_regras.collidepoint(e.pos): tela_regras()
+                    if btn_sair.collidepoint(e.pos): pygame.quit(); sys.exit()
 
 def tela_nomes_dupla():
     nomes = ["", ""] # Lista para guardar [Nome1, Nome2]
