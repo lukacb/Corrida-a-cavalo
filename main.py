@@ -495,16 +495,33 @@ def tela_nomes_dupla():
         else:
             msg = "Nome do Jogador 2 (Vermelho):"
             
-        titulo = fonte.render(msg, True, BRANCO)
-        nome_txt = fonte.render(nomes[atual] + "|", True, BRANCO)
+        # -------- TÍTULO --------
+        x_titulo = WIDTH//2 - fonte.size(msg)[0]//2
+        desenha_texto_sombra(
+            tela, fonte, msg,
+            BRANCO, PRETO,
+            x_titulo, 120
+)
 
-        # Desenha centralizado
-        tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 120))
-        tela.blit(nome_txt, (WIDTH//2 - nome_txt.get_width()//2, 180))
-        
-        # Instrução pequena
-        info = pygame.font.SysFont("Arial", 20).render("Enter para confirmar", True, BRANCO)
-        tela.blit(info, (WIDTH//2 - info.get_width()//2, 250))
+# -------- NOME DIGITADO --------
+        texto_nome = nomes[atual] + "|"
+        x_nome = WIDTH//2 - fonte.size(texto_nome)[0]//2
+        desenha_texto_sombra(
+            tela, fonte, texto_nome,
+            BRANCO, PRETO,
+            x_nome, 180
+)
+
+# -------- INSTRUÇÃO --------
+        fonte_info = pygame.font.SysFont("Arial", 20)
+        info_texto = "Enter para confirmar"
+        x_info = WIDTH//2 - fonte_info.size(info_texto)[0]//2
+        desenha_texto_sombra(
+            tela, fonte_info, info_texto,
+            BRANCO, PRETO,
+            x_info, 250
+)
+
 
         pygame.display.update()
 
