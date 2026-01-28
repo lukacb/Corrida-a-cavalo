@@ -704,7 +704,7 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
 
         # -------- Jogador 1 (Placar Preto) --------
         y1 = 215
-        nome_surf_1 = fonte.render(f"{nome1}", True, cor1)
+        nome_surf_1 = fonte.render(f"{nome1}", True, BRANCO)
         score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
         
         total_w1 = nome_surf_1.get_width() + 8 + score_surf_1.get_width()
@@ -715,7 +715,7 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
 
         # -------- Jogador 2 (Placar Preto) --------
         y2 = 250
-        nome_surf_2 = fonte.render(f"{nome2}", True, cor2)
+        nome_surf_2 = fonte.render(f"{nome2}", True, BRANCO)
         score_surf_2 = fonte.render(f"{score2}", True, BRANCO)
 
         total_w2 = nome_surf_2.get_width() + 8 + score_surf_2.get_width()
