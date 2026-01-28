@@ -28,6 +28,8 @@ A ideia original do jogo, a lógica base de física (gravidade e pulo) e os spri
 
     Sistema de Menus e Fluxo: Auxiliou na lógica de transição entre telas (Menu Inicial -> Inserção de Nomes -> Seleção de Cavalos -> Jogo), criando funções modulares para cada etapa.
 
+    Manipulação de Sprites e Assets: Auxiliou na criação do sistema de carregamento de imagens (pygame.image.load), substituindo os retângulos coloridos originais por sprites de cavalos. A IA sugeriu a estrutura de dicionários para gerenciar as imagens por cor e a lógica de redimensionamento (transform.scale) para adaptar os desenhos ao tamanho da hitbox do jogador.
+
 Declaração: Nenhuma função principal foi "100% gerada" sem entendimento. Todas as sugestões da IA (especialmente na lógica de classes e loops de eventos) foram revisadas, testadas e integradas manualmente pelo grupo. A lógica core do jogo permanece autoral.
 
 ---
