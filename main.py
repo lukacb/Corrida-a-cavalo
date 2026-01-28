@@ -33,7 +33,7 @@ except Exception as e:
 # ---------------- IMAGEM VENCEDOR ----------------
 try:
     IMG_VENCEDOR = pygame.image.load("vencedor.png").convert_alpha()
-    IMG_VENCEDOR = pygame.transform.scale(IMG_VENCEDOR, (400, 180))
+    IMG_VENCEDOR = pygame.transform.scale(IMG_VENCEDOR, (WIDTH, HEIGHT))
 except Exception as e:
     IMG_VENCEDOR = None
     print("Aviso: imagem 'vencedor.png' não encontrada.", e)
@@ -724,8 +724,10 @@ def tela_vencedor(vencedor, score1, score2):
         tela.fill(CINZA)
                 # --- IMAGEM DE VENCEDOR ---
         if IMG_VENCEDOR:
-            img_rect = IMG_VENCEDOR.get_rect(center=(WIDTH//2, 90))
-            tela.blit(IMG_VENCEDOR, img_rect)
+            tela.blit(IMG_VENCEDOR, (0, 0))
+        else:
+            tela.fill(CINZA)
+
 
         
         # Mostra quem ganhou
