@@ -40,6 +40,9 @@ MARROM = (120, 72, 18)
 AZUL = (20, 120, 220)
 CINZA = (200, 200, 200)
 
+CAVALO_W = 100  
+CAVALO_H = 120
+
 OPCOES_CAVALOS = [
     {"nome": "Relâmpago", "cor": AZUL, "img_key": "azul"},
     {"nome": "Fúria", "cor": (220, 20, 60), "img_key": "vermelho"}, 
@@ -54,29 +57,26 @@ OPCOES_CAVALOS = [
 SPRITES_CAVALOS = {}
 
 def carregar_sprites():
-    # Agora a lista procura exatamente por esses nomes
-    # O "vermelho" vai procurar por "cavalo_andando_vermelho.png"
     cores_arquivos = ["azul", "vermelho", "cinza", "sombra", "ouro", "verde", "violeta"]
     
     for cor in cores_arquivos:
         try:
-            # 1. Carrega apenas a imagem ANDANDO
             img_run = pygame.image.load(f"cavalo_andando_{cor}.png").convert_alpha()
-            img_run = pygame.transform.scale(img_run, (36, 48)) # Ajusta tamanho
             
-            # 2. Como não tem imagem de pulo, usamos a mesma para os dois estados
+          
+            img_run = pygame.transform.scale(img_run, (CAVALO_W, CAVALO_H)) 
+
+            
             SPRITES_CAVALOS[cor] = {
                 "run": img_run, 
-                "jump": img_run  # Usa a mesma imagem
+                "jump": img_run 
             }
         except Exception as e:
             print(f"Erro ao carregar cavalo {cor}: {e}")
-            # Fallback (quadrado branco) se der erro
-            fallback = pygame.Surface((36, 48))
+            fallback = pygame.Surface((CAVALO_W, CAVALO_H))
             fallback.fill(BRANCO)
             SPRITES_CAVALOS[cor] = {"run": fallback, "jump": fallback}
 
-# Chame a função imediatamente
 carregar_sprites()
 
 
@@ -95,8 +95,8 @@ GROUND_Y = HEIGHT - 70
 
 # ---------------- PERSONAGENS ----------------
 PERSONAGENS = {
-    "p1": {"w": 36, "h": 48, "color": AZUL, "jump": 13, "grav": 0.72},
-    "p2": {"w": 36, "h": 48, "color": (220, 20, 60), "jump": 13, "grav": 0.72}, # Vermelho
+    "p1": {"w": CAVALO_W, "h": CAVALO_H, "color": AZUL, "jump": 13, "grav": 0.72},
+    "p2": {"w": CAVALO_W, "h": CAVALO_H, "color": (220, 20, 60), "jump": 13, "grav": 0.72},
 }
 
 
@@ -257,22 +257,16 @@ class Player:
                 self.on_ground = True
 
     def draw(self):
-        if not self.vivo:
-            # Se morreu, desenha um retângulo cinza (ou poderia ser imagem pb)
-            pygame.draw.rect(tela, (100, 100, 100), self.rect, border_radius=6)
-            return
-
-        # Lógica da Animação
         sprites = SPRITES_CAVALOS.get(self.img_key)
         
         if sprites:
             if self.on_ground:
-                tela.blit(sprites["run"], self.rect) # Desenha correndo
+                tela.blit(sprites["run"], self.rect) 
             else:
-                tela.blit(sprites["jump"], self.rect) # Desenha pulando
+                tela.blit(sprites["jump"], self.rect) 
         else:
-            # Fallback se não tiver imagem
-            pygame.draw.rect(tela, self.color, self.rect, border_radius=6)
+            cor_desenho = self.color if self.vivo else CINZA
+            pygame.draw.rect(tela, cor_desenho, self.rect, border_radius=6)
 
 # ---------------- OBSTÁCULOS ----------------
 OBSTACLE_W = 56
