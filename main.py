@@ -1,4 +1,3 @@
-# hipismo_runner.py
 import pygame
 import sys
 import random
@@ -58,9 +57,9 @@ def desenha_texto_sombra(tela, fonte, texto, cor_texto, cor_sombra, x, y, offset
     sombra = fonte.render(texto, True, cor_sombra)
     texto_render = fonte.render(texto, True, cor_texto)
 
-    # sombra (um pouco deslocada)
+    
     tela.blit(sombra, (x + offset, y + offset))
-    # texto principal
+    
     tela.blit(texto_render, (x, y))
 
 CAVALO_W = 100  
@@ -142,7 +141,7 @@ def tela_selecao_cavalos(nome1, nome2):
         # DESENHO DO CAVALO P1 (NOVO)
         cavalo1 = OPCOES_CAVALOS[idx1]
         key1 = cavalo1["img_key"]
-        # Pegamos a imagem e aumentamos ela só para o menu (pra ficar bonito)
+        
         img_preview1 = pygame.transform.scale(SPRITES_CAVALOS[key1]["run"], (100, 130))
         # Centraliza a imagem
         img_rect1 = img_preview1.get_rect(center=(WIDTH//4, 200))
@@ -163,7 +162,7 @@ def tela_selecao_cavalos(nome1, nome2):
         txt_n2 = fonte_nome.render(nome2, True, PRETO)
         tela.blit(txt_n2, (3*WIDTH//4 - txt_n2.get_width()//2, 50))
         
-        # DESENHO DO CAVALO P2 (NOVO)
+        # DESENHO DO CAVALO P2 
         cavalo2 = OPCOES_CAVALOS[idx2]
         key2 = cavalo2["img_key"]
         img_preview2 = pygame.transform.scale(SPRITES_CAVALOS[key2]["run"], (100, 130))
@@ -179,12 +178,11 @@ def tela_selecao_cavalos(nome1, nome2):
 
         pygame.display.update()
         
-        # O retorno agora manda o DICIONARIO do cavalo inteiro, não só a cor
         if confirmado1 and confirmado2:
             pygame.time.delay(500)
             return cavalo1, cavalo2 
 
-        # ... (Eventos de teclado continuam iguais) ...
+       
         for e in pygame.event.get():
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
             if e.type == pygame.KEYDOWN:
@@ -247,13 +245,13 @@ class Player:
         p = PERSONAGENS[tipo]
         self.w, self.h = p["w"], p["h"]
         
-        # Pega a chave da imagem (ex: 'azul') e carrega os sprites
+        # Pega a chave da imagem e carrega os sprites
         if dados_cavalo:
-            self.color = dados_cavalo["cor"] # Mantemos a cor para o texto do placar
+            self.color = dados_cavalo["cor"] 
             self.img_key = dados_cavalo["img_key"]
         else:
             self.color = p["color"]
-            self.img_key = "azul" # fallback
+            self.img_key = "azul" 
             
         self.jump_force = p["jump"]
         self.gravity = p["grav"]
@@ -333,7 +331,7 @@ class ObstacleManager:
 
         # Configurações de velocidade
         self.BASE_SPEED = 8.0
-        self.SPEED_STEP = 1.0      # quanto aumenta a cada 5000 pontos
+        self.SPEED_STEP = 1.0    
         self.MAX_SPEED = 12.0      # limite máximo
         self.speed = self.BASE_SPEED
 
@@ -355,7 +353,7 @@ class ObstacleManager:
 
             self.obstacles.append(Obstacle(x, self.speed, self.y_chao))
 
-        # Atualiza obstáculos existentes (normaliza dt para frames)
+        # Atualiza obstáculos existentes
         for obs in self.obstacles[:]:
             obs.update(dt_ms / 16.6)
             if obs.rect.right < 0:
@@ -374,17 +372,17 @@ def tela_regras():
     fonte_titulo = pygame.font.SysFont("Arial", 40, bold=True)
     fonte_texto = pygame.font.SysFont("Arial", 24)
     
-    # Botão de Voltar
+    
     btn_voltar = pygame.Rect(WIDTH//2 - 100, HEIGHT - 100, 200, 50)
 
     while True:
         tela.fill(CINZA)
         
-        # Título
+        
         titulo = fonte_titulo.render("REGRAS DO JOGO", True, PRETO)
         tela.blit(titulo, (WIDTH//2 - titulo.get_width()//2, 50))
 
-        # Texto das regras (Lista de strings)
+        # Texto das regras 
         linhas = [
             "O objetivo é sobreviver o maior tempo possível.",
             "Quem bater no obstáculo primeiro perde.",
@@ -425,8 +423,7 @@ def tela_regras():
 def tela_menu():
     fonte = pygame.font.SysFont("Arial", 40, bold=True)
     
-    # --- POSIÇÕES DOS BOTÕES (Ajustadas para baixo) ---
-    # Antes eram 200, 300, 400. Agora baixamos todos em 100 pixels.
+    # --- POSIÇÕES DOS BOTÕES ---
     btn_jogar = pygame.Rect(WIDTH//2 - 100, 300, 200, 60)
     btn_regras = pygame.Rect(WIDTH//2 - 100, 400, 200, 60)
     btn_sair = pygame.Rect(WIDTH//2 - 100, 500, 200, 60)
@@ -438,8 +435,6 @@ def tela_menu():
         else:
             tela.fill(VERDE) 
 
-        # (REMOVI A PARTE QUE DESENHAVA O TÍTULO TEXTO AQUI)
-        # Como o MENU_BG já tem o título desenhado, não precisamos escrever por cima.
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -477,8 +472,8 @@ def tela_menu():
                     if btn_sair.collidepoint(e.pos): pygame.quit(); sys.exit()
 
 def tela_nomes_dupla():
-    nomes = ["", ""] # Lista para guardar [Nome1, Nome2]
-    atual = 0 # 0 = editando P1, 1 = editando P2
+    nomes = ["", ""] 
+    atual = 0 
     fonte = pygame.font.SysFont("Arial", 36)
 
     while True:
@@ -488,8 +483,6 @@ def tela_nomes_dupla():
         else:
             tela.fill(VERDE)
 
-
-        # Muda o título dependendo de quem estamos digitando
         if atual == 0:
             msg = "Nome do Jogador 1 (Azul):"
         else:
@@ -553,10 +546,10 @@ def tela_placar(nome, score):
     small = pygame.font.SysFont("Arial", 20)
     tiny = pygame.font.SysFont("Arial", 16)
 
-    # atualiza highscores e obtém a lista atualizada
+    # Atualiza highscores e obtém a lista atualizada
     highscores = update_highscores(nome, score)
 
-    # layout coordinates
+    # Layout coordinates
     padding = 24
     left_x = padding
     right_x = WIDTH // 2 + padding
@@ -567,46 +560,7 @@ def tela_placar(nome, score):
 
     while True:
         tela.fill(CINZA)
-
-        # Título (centrado)
-        titulo_surf = fonte_titulo.render("PLACAR FINAL", True, PRETO)
-        tela.blit(titulo_surf, ((WIDTH - titulo_surf.get_width()) // 2, title_y))
-
-        # Caixa esquerda: jogador e sua pontuação
-        jogador_title = fonte.render("Resultado", True, PRETO)
-        tela.blit(jogador_title, (left_x, info_y))
-        tela.blit(small.render(f"Jogador: {nome}", True, PRETO), (left_x, info_y + 40))
-        tela.blit(small.render(f"Pontuação: {score}", True, PRETO), (left_x, info_y + 72))
-
-        # Caixa direita: Top 10
-        top10_title = fonte.render("Top 10", True, PRETO)
-        tela.blit(top10_title, (right_x, top10_start_y))
-        # desenha um fundo leve atrás da lista para contraste (opcional)
-        list_bg_rect = pygame.Rect(right_x - 8, top10_start_y + 36, WIDTH - right_x - padding, min(260, 30 + len(highscores)*26))
-        pygame.draw.rect(tela, (240,240,240), list_bg_rect)
-        pygame.draw.rect(tela, (200,200,200), list_bg_rect, 1)
-
-        # Renderiza cada entrada do Top10 em linhas separadas (sem sobreposição)
-        line_y = top10_start_y + 44
-        for i, entry in enumerate(highscores, start=1):
-            rank_text = f"{i}. {entry['name']}"
-            score_text = f"{entry['score']}"
-            rank_surf = small.render(rank_text, True, PRETO)
-            score_surf = small.render(score_text, True, PRETO)
-            tela.blit(rank_surf, (right_x, line_y))
-            # alinha a pontuação à direita da área do Top10
-            tela.blit(score_surf, (right_x + list_bg_rect.width - score_surf.get_width() - 8, line_y))
-            line_y += 26  # espaçamento vertical consistente
-
-        # Comandos na parte inferior (centralizados, sem sobreposição)
-        cmd1 = tiny.render("Pressione R para jogar novamente", True, PRETO)
-        cmd2 = tiny.render("ESC para sair", True, PRETO)
-        # posiciona os dois com espaço entre eles
-        total_cmd_width = cmd1.get_width() + 24 + cmd2.get_width()
-        start_cmd_x = (WIDTH - total_cmd_width) // 2
-        tela.blit(cmd1, (start_cmd_x, bottom_y))
-        tela.blit(cmd2, (start_cmd_x + cmd1.get_width() + 24, bottom_y))
-
+        
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
@@ -626,7 +580,7 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
     chao_p1 = 355
     chao_p2 = 545
     
-    # Passamos o dicionário inteiro 'dados_cavalo' para o Player saber qual imagem usar
+    
     player1 = Player("p1", chao_p1, dados_cavalo=dados_c1)
     player2 = Player("p2", chao_p2, dados_cavalo=dados_c2)
     
@@ -638,7 +592,7 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
     score2 = 0
     last = pygame.time.get_ticks()
 
-    # Loop Principal: Roda enquanto pelo menos um estiver vivo
+    # Loop Principal
     while player1.vivo or player2.vivo:
         # 1. Cálculo do tempo
         now = pygame.time.get_ticks()
@@ -702,7 +656,7 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
         PLACAR_X = 40
         PLACAR_LARGURA = 220
 
-        # -------- Jogador 1 (Placar Preto) --------
+        # -------- Jogador 1 --------
         y1 = 215
         nome_surf_1 = fonte.render(f"{nome1}", True, BRANCO)
         score_surf_1 = fonte.render(f"{score1}", True, BRANCO)
@@ -713,7 +667,7 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
         tela.blit(nome_surf_1, (x1, y1))
         tela.blit(score_surf_1, (x1 + nome_surf_1.get_width() + 8, y1))
 
-        # -------- Jogador 2 (Placar Preto) --------
+        # -------- Jogador 2 --------
         y2 = 250
         nome_surf_2 = fonte.render(f"{nome2}", True, BRANCO)
         score_surf_2 = fonte.render(f"{score2}", True, BRANCO)
@@ -725,21 +679,20 @@ def jogo_multiplayer(nome1, nome2, dados_c1, dados_c2):
         tela.blit(score_surf_2, (x2 + nome_surf_2.get_width() + 8, y2))
 
 
-        # --- MENSAGENS DE "BATEU" (Branco e no Topo) ---
+        # --- MENSAGENS DE "BATEU" ---
         fonte_aviso = pygame.font.SysFont("Arial", 30, bold=True)
 
         if not player1.vivo:
             msg = fonte_aviso.render(f"{nome1} BATEU!", True, BRANCO)
             # Centraliza no eixo X
             msg_x = WIDTH // 2 - msg.get_width() // 2
-            # Posição Y fixa no topo (nuvens)
+            # Posição Y fixa no topo
             msg_y = 10 
             tela.blit(msg, (msg_x, msg_y))
         
         if not player2.vivo:
             msg = fonte_aviso.render(f"{nome2} BATEU!", True, BRANCO)
             msg_x = WIDTH // 2 - msg.get_width() // 2
-            # Posição Y um pouco abaixo do aviso do P1
             msg_y = 50
             tela.blit(msg, (msg_x, msg_y))
         
@@ -760,7 +713,7 @@ def tela_vencedor(vencedor, score1, score2):
 
     while True:
         tela.fill(CINZA)
-                # --- IMAGEM DE VENCEDOR ---
+            # --- IMAGEM DE VENCEDOR ---
         if IMG_VENCEDOR:
             tela.blit(IMG_VENCEDOR, (0, 0))
         else:
@@ -826,7 +779,7 @@ def main():
 
         n1, n2 = tela_nomes_dupla()
 
-        c1, c2 = tela_selecao_cavalos(n1, n2) # c1 e c2 agora são dicionários, não cores
+        c1, c2 = tela_selecao_cavalos(n1, n2)
         vencedor_nome, s1, s2 = jogo_multiplayer(n1, n2, c1, c2)
         
         tela_vencedor(vencedor_nome, s1, s2)
