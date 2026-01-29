@@ -6,7 +6,7 @@ Um jogo de corrida infinita (endless runner) competitivo em tela dividida, desen
 
 ## Vídeo de Apresentação
 
-    #link do jogo 
+    https://youtu.be/FdnZ9_CdU9k?si=dyo7T9s2_ouphZfM
 
 ---
 
